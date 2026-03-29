@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}My Items - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1><i class="fas fa-list-alt"></i> My Items</h1>
+        <a href="{% url 'items:post_item' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Post New Item
+        </a>
+    </div>
+
+    {% if items %}
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for item in items %}
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                    <!-- Item Image -->
+                    <div style="width: 100px; min-width: 100px;">
+                        {% if item.images.first %}
+                        <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}"
+                            style="width: 100px; height: 100px; object-fit: cover; border-radius: 0.5rem;">
+                        {% else %}
+                        <div style="width: 100px; height: 100px; border-radius: 0.5rem; background: var(--glass-bg); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="font-size: 2rem; opacity: 0.3;"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Item Info -->
+                    <div style="flex: 1;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                            {% if item.item_type == 'lost' %}
+                            <span class="badge badge-danger">Lost</span>
+                            {% else %}
+                            <span class="badge badge-success">Found</span>
+                            {% endif %}
+                            <span class="badge badge-{{ item.status }}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </div>
+                        <h3 style="margin-bottom: 0.25rem;">
+                            <a href="{% url 'items:item_detail' item.pk %}" style="color: inherit; text-decoration: none;">
+                                {{ item.title }}
+                            </a>
+                        </h3>
+                        <p class="text-muted mb-1">{{ item.description|truncatewords:20 }}</p>
+                        <div class="item-card-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> {{ item.location }}</span>
+                            <span><i class="fas fa-calendar"></i> {{ item.date_lost_found }}</span>
+                            <span><i class="fas fa-eye"></i> {{ item.views_count }} views</span>
+                            <span><i class="fas fa-flag"></i> {{ item.claims.count }} claims</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-outline" style="padding: 0.5rem 0.75rem;">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if item.status == 'active' %}
+                        <a href="{% url 'items:edit_item' item.pk %}" class="btn btn-outline" style="padding: 0.5rem 0.75rem;">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'items:mark_resolved' item.pk %}" class="btn btn-success" style="padding: 0.5rem 0.75rem;">
+                            <i class="fas fa-check"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'items:delete_item' item.pk %}" class="btn btn-outline" style="padding: 0.5rem 0.75rem; color: var(--danger); border-color: var(--danger);">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+
+        <span class="btn btn-outline" style="pointer-events: none;">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center" style="padding: 4rem;">
+            <i class="fas fa-inbox" style="font-size: 4rem; color: var(--glass-border); margin-bottom: 1rem;"></i>
+            <h3>No Items Posted Yet</h3>
+            <p class="text-muted">You haven't posted any lost or found items yet.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                <a href="{% url 'items:post_item' %}?type=lost" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Post Lost Item
+                </a>
+                <a href="{% url 'items:post_item' %}?type=found" class="btn btn-secondary">
+                    <i class="fas fa-hand-holding"></i> Post Found Item
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

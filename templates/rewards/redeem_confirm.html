@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Redemption - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 3rem;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h2><i class="fas fa-check-circle"></i> Confirm Redemption</h2>
+        </div>
+        <div class="card-body text-center">
+            <div style="font-size: 4rem; color: var(--warning); margin-bottom: 1rem;">
+                <i class="fas fa-gift"></i>
+            </div>
+
+            <h3>{{ giftcard.name }}</h3>
+            <p class="text-muted">{{ giftcard.description }}</p>
+
+            <div class="alert alert-info mt-3">
+                <p>This will deduct <strong>{{ giftcard.points_required }} points</strong> from your balance.</p>
+                <p>Current Balance: {{ user.points_balance }} points</p>
+                <p>Balance after redemption: {{ user.points_balance|add:"-"|add:giftcard.points_required }} points</p>
+            </div>
+
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <div class="grid grid-2">
+                    <a href="{% url 'rewards:giftcard_catalog' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Confirm Redemption</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

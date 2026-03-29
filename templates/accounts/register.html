@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Register - Lost and Found{% endblock %}
+
+{% block extra_css %}
+<!-- intl-tel-input CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.1.1/build/css/intlTelInput.css">
+<style>
+    /* intl-tel-input dark theme overrides */
+    .iti {
+        width: 100%;
+    }
+    .iti__country-list {
+        background: var(--bg-secondary);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow-lg);
+        max-height: 250px;
+    }
+    .iti__country-list .iti__country:hover,
+    .iti__country-list .iti__country.iti__highlight {
+        background: var(--bg-tertiary);
+    }
+    .iti__country-list .iti__divider {
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .iti__selected-country {
+        background: transparent !important;
+    }
+    .iti__selected-country-primary {
+        background: transparent !important;
+        border-radius: 0.5rem 0 0 0.5rem;
+        padding: 0 0.75rem;
+    }
+    .iti__search-input {
+        background: var(--bg-tertiary) !important;
+        border: 1px solid var(--glass-border) !important;
+        color: var(--text-primary) !important;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+    }
+    .iti__country-name,
+    .iti__dial-code {
+        color: var(--text-secondary);
+    }
+    .iti__arrow {
+        border-top-color: var(--text-secondary);
+    }
+    .iti__arrow--up {
+        border-bottom-color: var(--text-secondary);
+    }
+    .iti input[type="tel"] {
+        padding-left: 52px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 3rem;">
+    <div class="card fade-in">
+        <div class="card-header text-center">
+            <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" data-validate id="registerForm">
+                {% csrf_token %}
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Username *</label>
+                        {{ form.username|add_class:"form-control" }}
+                        {% if form.username.errors %}
+                        <small style="color: var(--danger);">{{ form.username.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        {{ form.email|add_class:"form-control" }}
+                        {% if form.email.errors %}
+                        <small style="color: var(--danger);">{{ form.email.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Recovery Email <small class="text-muted">(optional)</small></label>
+                    {{ form.recovery_email|add_class:"form-control" }}
+                    {% if form.recovery_email.errors %}
+                    <small style="color: var(--danger);">{{ form.recovery_email.errors.0 }}</small>
+                    {% endif %}
+                    <small class="text-muted" style="display: block; margin-top: 0.25rem;">
+                        <i class="fas fa-shield-alt"></i> Used for password recovery if your primary email is inaccessible.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" id="phone_input" class="form-control" placeholder="Phone number">
+                    <!-- Hidden field stores the full international number -->
+                    <input type="hidden" name="phone_number" id="phone_full">
+                    {% if form.phone_number.errors %}
+                    <small style="color: var(--danger);">{{ form.phone_number.errors.0 }}</small>
+                    {% endif %}
+                    <small class="text-muted" style="display: block; margin-top: 0.25rem;">
+                        <i class="fas fa-globe"></i> Select your country for auto code.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    {{ form.address|add_class:"form-control" }}
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Password *</label>
+                        <div class="password-wrapper">
+                            {{ form.password1|add_class:"form-control" }}
+                            <i class="fas fa-eye password-toggle-icon" onclick="togglePasswordVisibility(this)"></i>
+                        </div>
+                        {% if form.password1.errors %}
+                        <small style="color: var(--danger);">{{ form.password1.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password *</label>
+                        <div class="password-wrapper">
+                            {{ form.password2|add_class:"form-control" }}
+                            <i class="fas fa-eye password-toggle-icon" onclick="togglePasswordVisibility(this)"></i>
+                        </div>
+                        {% if form.password2.errors %}
+                        <small style="color: var(--danger);">{{ form.password2.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <p class="text-muted">Already have an account? <a href="{% url 'accounts:login' %}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- intl-tel-input JS -->
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.1.1/build/js/intlTelInput.min.js"></script>
+<script>
+    function togglePasswordVisibility(icon) {
+        const input = icon.previousElementSibling;
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const phoneInput = document.querySelector('#phone_input');
+        const phoneHidden = document.querySelector('#phone_full');
+
+        if (phoneInput) {
+            const iti = window.intlTelInput(phoneInput, {
+                initialCountry: "np",  // Nepal as default
+                preferredCountries: ["np", "in", "us", "gb"],
+                separateDialCode: true,
+                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@21.1.1/build/js/utils.js",
+                countrySearch: true,
+                showFlags: true,
+                formatOnDisplay: true,
+            });
+
+            // On form submit, copy the full number to hidden field
+            const form = document.getElementById('registerForm');
+            form.addEventListener('submit', function() {
+                if (phoneInput.value.trim()) {
+                    phoneHidden.value = iti.getNumber();
+                } else {
+                    phoneHidden.value = '';
+                }
+            });
+
+            // Also update on input change
+            phoneInput.addEventListener('change', function() {
+                if (phoneInput.value.trim()) {
+                    phoneHidden.value = iti.getNumber();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

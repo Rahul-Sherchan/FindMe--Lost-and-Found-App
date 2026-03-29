@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}My Profile - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <!-- Profile Header -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
+                <div style="position: relative;">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile"
+                        style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--glass-border);">
+                    {% else %}
+                    <div
+                        style="width: 150px; height: 150px; border-radius: 50%; background: var(--glass-bg); display: flex; align-items: center; justify-content: center; font-size: 4rem; border: 4px solid var(--glass-border);">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    {% if user.is_premium %}
+                    <div
+                        style="position: absolute; bottom: 0; right: 0; background: var(--warning); color: var(--bg-primary); padding: 0.5rem; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h1 style="margin-bottom: 0.5rem;">{{ user.username }}</h1>
+                            <p class="text-muted mb-1"><i class="fas fa-envelope"></i> {{ user.email }}</p>
+                            {% if user.phone_number %}
+                            <p class="text-muted mb-1"><i class="fas fa-phone"></i> {{ user.phone_number }}</p>
+                            {% endif %}
+                            {% if user.address %}
+                            <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> {{ user.address }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </a>
+                            {% if not user.is_premium %}
+                            <a href="{% url 'accounts:upgrade_premium' %}" class="btn btn-warning"
+                                style="color: var(--bg-primary);">
+                                <i class="fas fa-crown"></i> Go Premium
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-3 mt-3">
+                        <div class="card p-2 text-center" style="background: var(--glass-bg);">
+                            <h3 class="text-primary mb-0">{{ user.points_balance }}</h3>
+                            <small class="text-muted">Points</small>
+                        </div>
+                        <div class="card p-2 text-center" style="background: var(--glass-bg);">
+                            <h3 class="text-success mb-0">{{ items_found|default:"0" }}</h3>
+                            <small class="text-muted">Items Found</small>
+                        </div>
+                        <div class="card p-2 text-center" style="background: var(--glass-bg);">
+                            <h3 class="text-info mb-0">{{ items_posted|default:"0" }}</h3>
+                            <small class="text-muted">Items Posted</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-3">
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <a href="{% url 'items:post_item' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Post Lost/Found Item
+                    </a>
+                    <a href="{% url 'items:my_items' %}" class="btn btn-outline">
+                        <i class="fas fa-list"></i> Manage My Items
+                    </a>
+                    <a href="{% url 'rewards:giftcard_catalog' %}" class="btn btn-outline">
+                        <i class="fas fa-gift"></i> Redeem Points
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div style="grid-column: span 2;">
+            <div class="card" style="height: 100%;">
+                <div class="card-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>Recent Transactions</h3>
+                        <a href="{% url 'accounts:points_history' %}" class="text-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if transactions %}
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        {% for transaction in transactions %}
+                        <div
+                            style="display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid var(--glass-border); align-items: center;">
+                            <div>
+                                <p class="mb-0">{{ transaction.description }}</p>
+                                <small class="text-muted">{{ transaction.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            {% if transaction.transaction_type == 'earned' %}
+                            <span class="badge badge-success">+{{ transaction.points }}</span>
+                            {% else %}
+                            <span class="badge badge-danger">-{{ transaction.points }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mt-3">No transactions yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FindMe - Lost and Found{% endblock %}</title>
+    <meta name="description"
+        content="{% block description %}FindMe - Find your lost items or help others find theirs. The premier lost and found platform with rewards.{% endblock %}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{% url 'home' %}" class="navbar-brand">
+                <i class="fas fa-search-location"></i> FindMe
+            </a>
+
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    {% if user.is_staff or user.user_type == 'admin' %}
+                    <!-- Admin UI Navbar -->
+                    <li><a href="{% url 'admin_dashboard:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Go to Admin Panel</a></li>
+                    <li><a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    {% else %}
+                    <!-- Normal User Navbar -->
+                    <li><a href="{% url 'items:item_list' %}"><i class="fas fa-list"></i> Browse Items</a></li>
+                    <li><a href="{% url 'items:post_item' %}?type=lost"><i class="fas fa-search-minus"></i> Post Lost Item</a></li>
+                    <li><a href="{% url 'items:post_item' %}?type=found"><i class="fas fa-hand-holding-heart"></i> Post Found Item</a></li>
+                    <li><a href="{% url 'messaging:conversation_list' %}"><i class="fas fa-comments"></i> Messages</a></li>
+                    <li>
+                        <a href="{% url 'notifications:notification_list' %}">
+                            <i class="fas fa-bell"></i> Notifications
+                        </a>
+                    </li>
+                    <!-- We keep Rewards and Profile as they are logical parts of the user profile -->
+                    <li><a href="{% url 'rewards:giftcard_catalog' %}"><i class="fas fa-gift"></i> Rewards</a></li>
+                    <li>
+                        <a href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                            {% if user.is_premium %}
+                            <span class="badge badge-warning">Premium</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li><a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    {% endif %}
+                {% else %}
+                    <!-- Guest Navbar -->
+                    <li><a href="{% url 'items:item_list' %}"><i class="fas fa-list"></i> Browse Items</a></li>
+                    <li><a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                    <li><a href="{% url 'accounts:register' %}" class="btn btn-primary">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container" style="margin-top: 1rem;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 FindMe. All rights reserved.</p>
+            <p class="text-muted">Helping people reunite with their belongings.</p>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

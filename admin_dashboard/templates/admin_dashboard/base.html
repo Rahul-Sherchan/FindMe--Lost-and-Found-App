@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} - FindMe</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500&family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2330;
+            --border: #2a3340;
+            --text: #e6edf3;
+            --muted: #7d8590;
+            --amber: #f0a500;
+            --amber-dim: rgba(240,165,0,0.12);
+            --red: #f85149;
+            --red-dim: rgba(248,81,73,0.12);
+            --green: #3fb950;
+            --green-dim: rgba(63,185,80,0.12);
+            --blue: #58a6ff;
+            --blue-dim: rgba(88,166,255,0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, .brand-name, .stat-number { font-family: 'DM Serif Display', serif; }
+        .mono { font-family: 'DM Mono', monospace; }
+
+        /* Shared Classes */
+        .card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-amber { background: var(--amber); color: #000; }
+        .btn-amber:hover { opacity: 0.9; }
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-red:hover { opacity: 0.9; }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-green:hover { opacity: 0.9; }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: var(--surface2); }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+        .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+        .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(240,165,0,0.3); }
+        .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+        .badge-muted { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+        .empty-state i { font-size: 32px; margin-bottom: 16px; opacity: 0.5; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        
+        .sidebar-brand {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .brand-name { color: var(--amber); font-size: 28px; line-height: 1; }
+        .brand-subtitle { font-size: 11px; letter-spacing: 0.5px; color: var(--muted); margin-top: 4px; }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 20px 0; }
+        
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title {
+            padding: 0 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            margin-bottom: 8px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav-link i { width: 20px; text-align: center; margin-right: 12px; color: var(--muted); }
+        .nav-link:hover { background: var(--surface2); }
+        .nav-link:hover i { color: var(--text); }
+        
+        .nav-link.active {
+            color: var(--amber);
+            border-left-color: var(--amber);
+            background: var(--amber-dim);
+        }
+        .nav-link.active i { color: var(--amber); }
+        
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface2);
+            color: var(--amber);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border: 1px solid var(--border);
+        }
+        .user-info { flex: 1; overflow: hidden; }
+        .user-name { font-size: 14px; font-weight: 500; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .user-role { font-size: 12px; color: var(--muted); }
+        .sign-out { color: var(--muted); transition: 0.2s; }
+        .sign-out:hover { color: var(--red); }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: calc(100% - 240px);
+        }
+
+        .topbar {
+            height: 60px;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 90;
+        }
+        .topbar-title { font-size: 20px; font-weight: 500; }
+        .topbar-right { display: flex; align-items: center; gap: 24px; }
+        .clock { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--muted); }
+
+        .content-area { padding: 32px; }
+
+        /* Tables & Lists */
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        tbody tr { border-bottom: 1px solid var(--border); }
+        tbody tr:last-child { border-bottom: none; }
+        tbody td { padding: 16px; font-size: 14px; vertical-align: middle; }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-subtitle { color: var(--muted); font-size: 14px; margin-top: 4px; }
+        
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .filter-select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        /* Messages */
+        .messages { margin-bottom: 24px; }
+        .msg-box {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .msg-success { background: var(--green-dim); border: 1px solid rgba(63,185,80,0.3); color: var(--text); }
+        .msg-success i { color: var(--green); }
+        .msg-warning { background: var(--amber-dim); border: 1px solid rgba(240,165,0,0.3); color: var(--text); }
+        .msg-warning i { color: var(--amber); }
+        .msg-error { background: var(--red-dim); border: 1px solid rgba(248,81,73,0.3); color: var(--text); }
+        .msg-error i { color: var(--red); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .content-area { padding: 16px; }
+        }
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name">FindMe</div>
+            <div class="brand-subtitle mono">ADMIN CONTROL PANEL</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                <a href="{% url 'admin_dashboard:dashboard' %}" class="nav-link {% block nav_dashboard %}{% endblock %}">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Content</div>
+                <a href="{% url 'admin_dashboard:manage_posts' %}" class="nav-link {% block nav_posts %}{% endblock %}">
+                    <i class="fa-solid fa-layer-group"></i> Posts
+                </a>
+                <a href="{% url 'admin_dashboard:manage_claims' %}" class="nav-link {% block nav_claims %}{% endblock %}">
+                    <i class="fa-solid fa-handshake-angle"></i> Claims
+                    {% if pending_claims_count > 0 %}
+                    <span class="badge badge-red" style="margin-left: auto;">{{ pending_claims_count }}</span>
+                    {% endif %}
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Users</div>
+                <a href="{% url 'admin_dashboard:manage_users' %}" class="nav-link {% block nav_users %}{% endblock %}">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">System</div>
+                <a href="{% url 'admin_dashboard:reports' %}" class="nav-link {% block nav_reports %}{% endblock %}">
+                    <i class="fa-solid fa-chart-line"></i> Reports
+                </a>
+                <a href="/admin/" class="nav-link">
+                    <i class="fa-solid fa-database"></i> Django Admin
+                </a>
+                <a href="/" class="nav-link">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> View Site
+                </a>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="avatar-circle">
+                {{ request.user.username|make_list|first|upper }}
+            </div>
+            <div class="user-info">
+                <div class="user-name">{{ request.user.username }}</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="sign-out" style="background:none;border:none;cursor:pointer;" title="Sign out">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <h1 class="topbar-title">{% block topbar_title %}Dashboard{% endblock %}</h1>
+            <div class="topbar-right">
+                <div class="clock" id="live-clock">00:00:00</div>
+                <a href="/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View Site</a>
+            </div>
+        </header>
+
+        <section class="content-area">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="msg-box {% if message.tags == 'error' %}msg-error{% elif message.tags == 'warning' %}msg-warning{% else %}msg-success{% endif %}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-exclamation{% endif %}"></i>
+                    <div>{{ message }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString([], { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

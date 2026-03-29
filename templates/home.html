@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - FindMe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero fade-in">
+        <h1><i class="fas fa-search-location"></i> FindMe</h1>
+        <p>Reunite with your lost belongings or help others find theirs</p>
+        <div class="search-bar">
+            <form action="{% url 'items:item_list' %}" method="get" style="display: flex; gap: 1rem; width: 100%;">
+                <input type="text" name="query" class="form-control" placeholder="Search for lost or found items...">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+            {% if user.is_authenticated %}
+            <a href="{% url 'items:post_item' %}?type=lost" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Post Lost Item
+            </a>
+            <a href="{% url 'items:post_item' %}?type=found" class="btn btn-secondary">
+                <i class="fas fa-hand-holding"></i> Post Found Item
+            </a>
+            {% else %}
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Get Started
+            </a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Lost Items -->
+    <section class="mb-3">
+        <h2><i class="fas fa-exclamation-circle"></i> Recent Lost Items</h2>
+        <div class="grid grid-3">
+            {% for item in recent_lost %}
+            <div class="item-card fade-in">
+                {% if item.images.first %}
+                <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" class="item-card-image">
+                {% else %}
+                <div class="item-card-image"
+                    style="background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-image" style="font-size: 3rem; opacity: 0.3;"></i>
+                </div>
+                {% endif %}
+                <div class="item-card-body">
+                    <h3 class="item-card-title">{{ item.title }}</h3>
+                    <p class="text-muted">{{ item.description|truncatewords:15 }}</p>
+                    <div class="item-card-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> {{ item.location }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ item.date_lost_found }}</span>
+                    </div>
+                    {% if item.reward_points > 0 %}
+                    <div class="mt-2">
+                        <span class="badge badge-warning">
+                            <i class="fas fa-coins"></i> {{ item.reward_points }} points reward
+                        </span>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-primary mt-2" style="width: 100%;">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No lost items posted yet.</p>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'items:item_list' %}?item_type=lost" class="btn btn-outline">
+                View All Lost Items <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Recent Found Items -->
+    <section class="mb-3">
+        <h2><i class="fas fa-check-circle"></i> Recent Found Items</h2>
+        <div class="grid grid-3">
+            {% for item in recent_found %}
+            <div class="item-card fade-in">
+                {% if item.images.first %}
+                <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" class="item-card-image">
+                {% else %}
+                <div class="item-card-image"
+                    style="background: linear-gradient(135deg, var(--accent), var(--success)); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-image" style="font-size: 3rem; opacity: 0.3;"></i>
+                </div>
+                {% endif %}
+                <div class="item-card-body">
+                    <h3 class="item-card-title">{{ item.title }}</h3>
+                    <p class="text-muted">{{ item.description|truncatewords:15 }}</p>
+                    <div class="item-card-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> {{ item.location }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ item.date_lost_found }}</span>
+                    </div>
+                    <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-success mt-2" style="width: 100%;">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No found items posted yet.</p>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'items:item_list' %}?item_type=found" class="btn btn-outline">
+                View All Found Items <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="mt-3">
+        <h2 class="text-center">Why Choose Us?</h2>
+        <div class="grid grid-3 mt-3">
+            <div class="card text-center">
+                <i class="fas fa-search" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <h3>Smart Matching</h3>
+                <p class="text-muted">Our algorithm matches lost and found items by category and location</p>
+            </div>
+            <div class="card text-center">
+                <i class="fas fa-coins" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
+                <h3>Reward System</h3>
+                <p class="text-muted">Earn points for helping others and redeem for gift cards</p>
+            </div>
+            <div class="card text-center">
+                <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
+                <h3>Secure Platform</h3>
+                <p class="text-muted">Admin-moderated claims ensure safe and verified transactions</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

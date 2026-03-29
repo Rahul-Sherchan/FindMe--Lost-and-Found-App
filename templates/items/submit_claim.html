@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Submit Claim - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 2rem;">
+    <!-- Item Summary -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                {% if item.images.first %}
+                <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}"
+                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem;">
+                {% else %}
+                <div style="width: 80px; height: 80px; border-radius: 0.5rem; background: var(--glass-bg); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-image" style="font-size: 1.5rem; opacity: 0.3;"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <small class="text-muted">Submitting claim for:</small>
+                    <h3 style="margin-bottom: 0.25rem;">{{ item.title }}</h3>
+                    <div class="item-card-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> {{ item.location }}</span>
+                        <span><i class="fas fa-calendar"></i> {{ item.date_lost_found }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claim Form -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-hand-paper"></i> Submit Your Claim</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <i class="fas fa-info-circle"></i>
+                Please provide details about how you found this item and any proof that you have it.
+                Your claim will be reviewed by an admin.
+            </div>
+
+            <form method="post" enctype="multipart/form-data" data-validate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Message *</label>
+                    {{ form.message|add_class:"form-control" }}
+                    {% if form.message.errors %}
+                    <small style="color: var(--danger);">{{ form.message.errors.0 }}</small>
+                    {% endif %}
+                    <small class="text-muted">Explain how you found this item and include identifying details.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Proof Image (Optional)</label>
+                    {{ form.proof_image|add_class:"form-control" }}
+                    {% if form.proof_image.errors %}
+                    <small style="color: var(--danger);">{{ form.proof_image.errors.0 }}</small>
+                    {% endif %}
+                    <small class="text-muted">Upload a photo of the item as proof.</small>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-paper-plane"></i> Submit Claim
+                    </button>
+                    <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Item - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin-top: 3rem;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h2 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Delete Item</h2>
+        </div>
+        <div class="card-body text-center">
+            <div style="padding: 1rem;">
+                <i class="fas fa-trash-alt" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                <h3>Are you sure?</h3>
+                <p class="text-muted">
+                    You are about to delete <strong>"{{ item.title }}"</strong>.
+                    This action cannot be undone.
+                </p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <a href="{% url 'items:my_items' %}" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="flex: 1; background: var(--danger);">
+                        <i class="fas fa-trash"></i> Delete Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

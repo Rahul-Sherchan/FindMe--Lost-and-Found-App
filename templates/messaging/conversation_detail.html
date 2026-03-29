@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with {{ other_user.username }} - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin-top: 2rem;">
+    <!-- Conversation Header -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center;">
+                    <a href="{% url 'messaging:conversation_list' %}" class="btn btn-outline"
+                        style="margin-right: 1rem; padding: 0.5rem;">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h3>{{ other_user.username }}</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                            {% if conversation.item %}
+                            Regarding: <a href="{% url 'items:item_detail' conversation.item.pk %}">{{ conversation.item.title }}</a>
+                            {% else %}
+                            Regarding: Admin / User Support Channel
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="card" style="height: 500px; display: flex; flex-direction: column;">
+        <div class="card-body" style="flex: 1; overflow-y: auto; padding: 1.5rem;" id="message-container">
+            {% for message in chat_messages %}
+            <div class="message-row {% if message.sender == user %}sent{% else %}received{% endif %}">
+                <div class="message-bubble {% if message.sender == user %}sent{% else %}received{% endif %}">
+                    {{ message.content }}
+                </div>
+                <small class="text-muted mt-1" style="font-size: 0.75rem;">
+                    {{ message.created_at|date:"M d, g:i A" }}
+                    {% if message.sender == user %}
+                    {% if message.is_read %}
+                    <i class="fas fa-check-double text-success"></i>
+                    {% else %}
+                    <i class="fas fa-check"></i>
+                    {% endif %}
+                    {% endif %}
+                </small>
+            </div>
+            {% empty %}
+            <div class="text-center mt-5">
+                <p class="text-muted">Start the conversation!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Message Input -->
+        <div class="card-footer" style="padding: 1rem; border-top: 1px solid var(--glass-border);">
+            <form method="post" style="display: flex; gap: 1rem;">
+                {% csrf_token %}
+                <input type="text" name="content" class="form-control" placeholder="Type a message..." required
+                    autocomplete="off">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-row {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+    }
+
+    .message-row.sent {
+        align-items: flex-end;
+    }
+
+    .message-row.received {
+        align-items: flex-start;
+    }
+
+    .message-bubble {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+    }
+
+    .message-bubble.sent {
+        background: var(--primary);
+        color: white;
+        border-top-right-radius: 0;
+    }
+
+    .message-bubble.received {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border-top-left-radius: 0;
+    }
+</style>
+
+<script>
+    // Scroll to bottom of message container
+    window.onload = function () {
+        var container = document.getElementById("message-container");
+        container.scrollTop = container.scrollHeight;
+
+        // Focus input
+        document.querySelector('input[name="content"]').focus();
+    }
+</script>
+{% endblock %}

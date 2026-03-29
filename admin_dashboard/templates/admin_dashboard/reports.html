@@ -1,0 +1,236 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Reports{% endblock %}
+{% block topbar_title %}Reports{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 32px; font-weight: normal; color: #fff;">Reports</h2>
+    </div>
+    <div>
+        <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-ghost" style="border-color: #8b5cf6; color: #8b5cf6;"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+
+<!-- SECTION 1: Filter Card -->
+<div class="card" style="margin-bottom: 24px;">
+    <form method="get" action="" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <!-- Keep current start/end or view mode if toggling -->
+        <div style="display: flex; border: 1px solid #8b5cf6; border-radius: 6px; overflow: hidden;">
+            <button type="submit" name="view" value="monthly" class="btn" style="border: none; border-radius: 0; {% if view_mode == 'monthly' %}background: #8b5cf6; color: #fff;{% else %}background: transparent; color: #8b5cf6;{% endif %}">Monthly</button>
+            <button type="submit" name="view" value="weekly" class="btn" style="border: none; border-left: 1px solid #8b5cf6; border-radius: 0; {% if view_mode == 'weekly' %}background: #8b5cf6; color: #fff;{% else %}background: transparent; color: #8b5cf6;{% endif %}">Weekly</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="color: var(--muted); font-size: 14px;">From:</label>
+            <input type="date" name="start" value="{{ start }}" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 14px; outline: none; color-scheme: dark;">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="color: var(--muted); font-size: 14px;">To:</label>
+            <input type="date" name="end" value="{{ end }}" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 14px; outline: none; color-scheme: dark;">
+        </div>
+
+        <button type="submit" class="btn" style="background: #8b5cf6; color: #fff; border: none;"><i class="fa-solid fa-filter"></i> Apply</button>
+        <a href="{% url 'admin_dashboard:reports' %}" class="btn" style="background: transparent; border: 1px solid #8b5cf6; color: #8b5cf6;">Reset</a>
+    </form>
+</div>
+
+<!-- SECTION 2: Four summary cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px;">
+    <!-- Card 1 — Lost Items -->
+    <div class="card" style="border-top: 3px solid #ef4444;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div class="stat-number" style="font-size: 32px; line-height: 1;">{{ total_lost }}</div>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(239,68,68,0.12); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+        </div>
+        <div style="font-weight: 500; font-size: 14px;">Lost Items</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">{{ lost_pct }}% of all posts</div>
+    </div>
+
+    <!-- Card 2 — Found Items -->
+    <div class="card" style="border-top: 3px solid #3fb950;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div class="stat-number" style="font-size: 32px; line-height: 1;">{{ total_found }}</div>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(63,185,80,0.12); color: #3fb950; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-hand-holding-heart"></i>
+            </div>
+        </div>
+        <div style="font-weight: 500; font-size: 14px;">Found Items</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">{{ found_pct }}% of all posts</div>
+    </div>
+
+    <!-- Card 3 — Items Returned -->
+    <div class="card" style="border-top: 3px solid #8b5cf6;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div class="stat-number" style="font-size: 32px; line-height: 1;">{{ total_resolved }}</div>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(139,92,246,0.12); color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+        </div>
+        <div style="font-weight: 500; font-size: 14px;">Items Returned</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">marked as resolved</div>
+    </div>
+
+    <!-- Card 4 — Return Rate -->
+    <div class="card" style="border-top: 3px solid #f97316;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div class="stat-number" style="font-size: 32px; line-height: 1;">{{ return_rate }}%</div>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(249,115,22,0.12); color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+        </div>
+        <div style="font-weight: 500; font-size: 14px;">Return Rate</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">of all posted items</div>
+    </div>
+</div>
+
+<!-- SECTION 3: Bar chart -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3 style="margin-bottom: 16px; font-size: 16px;">Trends Over Time</h3>
+    <div style="height: 300px; position: relative; background: transparent;">
+        {% if chart_labels != '[]' %}
+            <canvas id="reportChart" style="height: 300px;"></canvas>
+        {% else %}
+            <div class="empty-state" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <i class="fa-solid fa-chart-bar" style="font-size: 32px; color: var(--muted); margin-bottom: 16px; opacity: 0.5;"></i>
+                <div style="color: var(--muted);">No data available for the selected period.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- SECTION 4: Recently Resolved Items table -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3 style="margin-bottom: 16px; font-size: 16px;">Recently Resolved Items <span style="color:var(--muted); font-size:14px; font-weight:normal; margin-left:8px;">({{ recent_resolved|length }})</span></h3>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Posted By</th>
+                    <th>Resolved On</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recent_resolved %}
+                <tr>
+                    <td style="font-weight: bold; font-family: 'DM Serif Display', serif; font-size: 16px; letter-spacing: 0.5px;">{{ item.title }}</td>
+                    <td>
+                        <span class="badge {% if item.item_type == 'lost' %}badge-red{% else %}badge-green{% endif %}">
+                            {{ item.get_item_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ item.category.name|default:"—" }}</td>
+                    <td>{{ item.user.username }}</td>
+                    <td>{{ item.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-ghost btn-sm" style="border-color: #8b5cf6; color: #8b5cf6;" target="_blank">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-clipboard-check" style="font-size: 32px; color: var(--muted); margin-bottom: 16px; opacity: 0.5;"></i>
+                            <div style="color: var(--muted);">No resolved items in this period.</div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- BOTTOM: Tip line -->
+<div style="text-align: center; color: var(--muted); font-size: 13px; margin-top: 32px; margin-bottom: 16px;">
+    💡 Tip: Press Ctrl+P (or Cmd+P on Mac) to print or save this page as PDF.
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labelsStr = '{{ chart_labels|escapejs }}';
+        if (labelsStr && labelsStr !== '[]') {
+            const labels       = JSON.parse(labelsStr);
+            const lostData     = JSON.parse('{{ chart_lost|escapejs }}');
+            const foundData    = JSON.parse('{{ chart_found|escapejs }}');
+            const resolvedData = JSON.parse('{{ chart_resolved|escapejs }}');
+
+            Chart.defaults.color = '#9ca3af';
+
+            const ctx = document.getElementById('reportChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Lost',
+                                data: lostData,
+                                backgroundColor: 'rgba(239,68,68,0.75)',
+                                borderColor: '#ef4444',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Found',
+                                data: foundData,
+                                backgroundColor: 'rgba(34,197,94,0.75)',
+                                borderColor: '#22c55e',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Returned',
+                                data: resolvedData,
+                                backgroundColor: 'rgba(139,92,246,0.75)',
+                                borderColor: '#8b5cf6',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.07)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
