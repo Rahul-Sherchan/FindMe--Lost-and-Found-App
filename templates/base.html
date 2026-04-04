@@ -26,47 +26,86 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="container">
-            <a href="{% url 'home' %}" class="navbar-brand">
-                <i class="fas fa-search-location"></i> FindMe
-            </a>
+        <div class="navbar-wrapper">
+            <!-- LEFT SIDE: Logo & Navigation -->
+            <div class="navbar-left">
+                <a href="{% url 'home' %}" class="navbar-logo">
+                    <i class="fas fa-search-location"></i> FindMe
+                </a>
+                <div class="navbar-menu">
+                    <a href="{% url 'items:item_list' %}" class="nav-menu-item">
+                        <i class="fas fa-list"></i> Browse Activity
+                    </a>
+                </div>
+            </div>
 
-            <ul class="navbar-nav">
+            <!-- CENTER: Search Bar -->
+            <div class="navbar-center">
+                <form action="{% url 'items:item_list' %}" method="get" class="search-form">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="query" class="search-input" placeholder="Search for items, locations, categories...">
+                </form>
+            </div>
+
+            <!-- RIGHT SIDE: Actions & Profile -->
+            <div class="navbar-right">
                 {% if user.is_authenticated %}
-                    {% if user.is_staff or user.user_type == 'admin' %}
-                    <!-- Admin UI Navbar -->
-                    <li><a href="{% url 'admin_dashboard:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Go to Admin Panel</a></li>
-                    <li><a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                    {% else %}
-                    <!-- Normal User Navbar -->
-                    <li><a href="{% url 'items:item_list' %}"><i class="fas fa-list"></i> Browse Items</a></li>
-                    <li><a href="{% url 'items:post_item' %}?type=lost"><i class="fas fa-search-minus"></i> Post Lost Item</a></li>
-                    <li><a href="{% url 'items:post_item' %}?type=found"><i class="fas fa-hand-holding-heart"></i> Post Found Item</a></li>
-                    <li><a href="{% url 'messaging:conversation_list' %}"><i class="fas fa-comments"></i> Messages</a></li>
-                    <li>
-                        <a href="{% url 'notifications:notification_list' %}">
-                            <i class="fas fa-bell"></i> Notifications
+                    {% if not user.is_staff and user.user_type != 'admin' %}
+                    <!-- Report Buttons -->
+                    <a href="{% url 'items:post_item' %}?type=lost" class="btn btn-lost">
+                        <i class="fas fa-plus"></i> Report Lost
+                    </a>
+                    <a href="{% url 'items:post_item' %}?type=found" class="btn btn-found">
+                        <i class="fas fa-plus"></i> Report Found
+                    </a>
+
+                    <!-- Icons -->
+                    <div class="navbar-icons">
+                        <a href="{% url 'messaging:conversation_list' %}" class="navbar-icon-btn" title="Messages">
+                            <i class="fas fa-comments"></i>
+                            {% if unread_messages > 0 %}<span class="icon-badge">{{ unread_messages }}</span>{% endif %}
                         </a>
-                    </li>
-                    <!-- We keep Rewards and Profile as they are logical parts of the user profile -->
-                    <li><a href="{% url 'rewards:giftcard_catalog' %}"><i class="fas fa-gift"></i> Rewards</a></li>
-                    <li>
-                        <a href="{% url 'accounts:profile' %}">
-                            <i class="fas fa-user"></i> Profile
-                            {% if user.is_premium %}
-                            <span class="badge badge-warning">Premium</span>
-                            {% endif %}
+                        <a href="{% url 'notifications:notification_list' %}" class="navbar-icon-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            {% if unread_notifications > 0 %}<span class="icon-badge">{{ unread_notifications }}</span>{% endif %}
                         </a>
-                    </li>
-                    <li><a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        <a href="{% url 'rewards:giftcard_catalog' %}" class="navbar-icon-btn" title="Rewards">
+                            <i class="fas fa-gift"></i>
+                        </a>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    <div class="navbar-profile">
+                        <button class="profile-trigger">
+                            <i class="fas fa-user-circle"></i>
+                            {% if user.is_premium %}<span class="premium-indicator"></span>{% endif %}
+                        </button>
+                        <div class="profile-menu">
+                            <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                            <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+
+                    {% elif user.is_staff or user.user_type == 'admin' %}
+                    <!-- Admin -->
+                    <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-admin">
+                        <i class="fas fa-tachometer-alt"></i> Admin Panel
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="btn btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
                     {% endif %}
                 {% else %}
-                    <!-- Guest Navbar -->
-                    <li><a href="{% url 'items:item_list' %}"><i class="fas fa-list"></i> Browse Items</a></li>
-                    <li><a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                    <li><a href="{% url 'accounts:register' %}" class="btn btn-primary">Sign Up</a></li>
+                    <!-- Guest -->
+                    <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-found">Sign Up</a>
                 {% endif %}
-            </ul>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </nav>
 

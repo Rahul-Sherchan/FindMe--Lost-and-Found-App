@@ -28,6 +28,61 @@
         margin-bottom: 1rem;
         z-index: 1;
     }
+
+    /* Featured Image Upload */
+    .featured-image-upload {
+        position: relative;
+        width: 100%;
+    }
+
+    .featured-image-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
+        border: 2px dashed rgba(16, 185, 129, 0.3);
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 250px;
+        text-align: center;
+    }
+
+    .featured-image-placeholder:hover {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
+        border-color: rgba(16, 185, 129, 0.5);
+    }
+
+    .featured-image-placeholder i {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .featured-image-placeholder p {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-on-white);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .featured-image-placeholder small {
+        color: #9ca3af;
+        font-size: 0.9rem;
+    }
+
+    #featured_image_preview {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    #featured_image_preview_img {
+        display: block;
+        width: 100%;
+    }
 </style>
 {% endblock %}
 
@@ -113,9 +168,27 @@
                 </div>
 
                 <div class="form-group mt-3">
-                    <label class="form-label">Images *</label>
+                    <label class="form-label"><i class="fas fa-image"></i> Featured Logo/Cover Image *</label>
+                    <div class="featured-image-upload">
+                        <input type="file" name="featured_image" id="featured_image_input" class="form-control" 
+                            accept="image/jpeg,image/jpg,image/png" required style="display: none;">
+                        <div class="featured-image-placeholder" id="featured_image_placeholder">
+                            <i class="fas fa-camera"></i>
+                            <p>Click to upload a featured image for your item</p>
+                            <small>This will be the main image shown in listings</small>
+                        </div>
+                        <div id="featured_image_preview" style="display: none;">
+                            <img id="featured_image_preview_img" src="" alt="Featured Image" style="max-width: 100%; height: 200px; object-fit: cover; border-radius: 0.5rem;">
+                            <button type="button" class="btn btn-danger mt-2" id="remove_featured_image" style="width: 100%;">Remove Image</button>
+                        </div>
+                    </div>
+                    <small class="text-muted">Only .jpg, .jpeg, .png allowed (Max 5MB)</small>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label class="form-label">Additional Images</label>
                     <input type="file" name="images" class="form-control" multiple
-                        accept="image/jpeg,image/jpg,image/png" required>
+                        accept="image/jpeg,image/jpg,image/png">
                     <small class="text-muted">
                         {% if user.is_premium %}
                         Premium users: Unlimited images
@@ -221,6 +294,78 @@
                     }
                 })
                 .catch(err => console.error("Geocoding failed:", err));
+        });
+
+        // Featured Image Upload Handler
+        const featuredImageInput = document.getElementById('featured_image_input');
+        const featuredImagePlaceholder = document.getElementById('featured_image_placeholder');
+        const featuredImagePreview = document.getElementById('featured_image_preview');
+        const featuredImagePreviewImg = document.getElementById('featured_image_preview_img');
+        const removeFeaturedImageBtn = document.getElementById('remove_featured_image');
+
+        // Click placeholder to upload
+        featuredImagePlaceholder.addEventListener('click', function() {
+            featuredImageInput.click();
+        });
+
+        // Handle file selection
+        featuredImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (file) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Please upload a valid image file (JPG or PNG)');
+                    return;
+                }
+
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    return;
+                }
+
+                // Preview the image
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    featuredImagePreviewImg.src = event.target.result;
+                    featuredImagePlaceholder.style.display = 'none';
+                    featuredImagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove featured image
+        removeFeaturedImageBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            featuredImageInput.value = '';
+            featuredImagePreviewImg.src = '';
+            featuredImagePlaceholder.style.display = 'flex';
+            featuredImagePreview.style.display = 'none';
+        });
+
+        // Handle drag and drop
+        featuredImagePlaceholder.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            featuredImagePlaceholder.style.background = 'rgba(16, 185, 129, 0.2)';
+        });
+
+        featuredImagePlaceholder.addEventListener('dragleave', function() {
+            featuredImagePlaceholder.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05))';
+        });
+
+        featuredImagePlaceholder.addEventListener('drop', function(e) {
+            e.preventDefault();
+            featuredImagePlaceholder.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05))';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                featuredImageInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                featuredImageInput.dispatchEvent(event);
+            }
         });
     });
 </script>

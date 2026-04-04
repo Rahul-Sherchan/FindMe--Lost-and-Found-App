@@ -61,12 +61,21 @@ def post_item(request):
     """Post a new lost or found item"""
     if request.method == 'POST':
         form = ItemForm(request.POST, user=request.user)
+        featured_image = request.FILES.get('featured_image')
         images = request.FILES.getlist('images')
         
         if form.is_valid():
+            # Validate that at least featured image is uploaded
+            if not featured_image:
+                messages.error(request, 'Please upload a featured image for your item.')
+                return render(request, 'items/post_item.html', {'form': form})
+            
+            # Count total images
+            total_images = 1 + len(images)
+            
             # Validate image count
             try:
-                validate_image_count(request.user, len(images))
+                validate_image_count(request.user, total_images)
             except Exception as e:
                 messages.error(request, str(e))
                 return render(request, 'items/post_item.html', {'form': form})
@@ -76,12 +85,19 @@ def post_item(request):
             item.user = request.user
             item.save()
             
-            # Save images
-            for idx, image in enumerate(images):
+            # Save featured image first (as primary)
+            ItemImage.objects.create(
+                item=item,
+                image=featured_image,
+                is_primary=True
+            )
+            
+            # Save additional images
+            for image in images:
                 ItemImage.objects.create(
                     item=item,
                     image=image,
-                    is_primary=(idx == 0)  # First image is primary
+                    is_primary=False
                 )
             
             # Notify users with matching items

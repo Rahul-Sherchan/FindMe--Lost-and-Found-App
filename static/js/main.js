@@ -77,4 +77,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const navbarWrapper = document.querySelector('.navbar-wrapper');
+    
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', function() {
+            navbarWrapper.classList.toggle('mobile-menu-open');
+        });
+    }
+
+    // Close mobile menu when clicking on links
+    const navLinks = document.querySelectorAll('.navbar-left a, .navbar-right a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (navbarWrapper && navbarWrapper.classList.contains('mobile-menu-open')) {
+                navbarWrapper.classList.remove('mobile-menu-open');
+            }
+        });
+    });
 });
