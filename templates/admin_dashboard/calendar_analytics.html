@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Calendar Analytics - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/calendar-analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Navigation -->
+    <nav class="admin-nav navbar">
+        <div class="nav-brand">📊 Calendar Analytics</div>
+        <div class="nav-links">
+            <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+            <a href="{% url 'admin_dashboard:manage_users' %}">Users</a>
+            <a href="{% url 'admin_dashboard:manage_posts' %}">Posts</a>
+            <a href="{% url 'admin_dashboard:calendar_analytics' %}" class="active">Calendar</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="calendar-analytics-container">
+        <div class="calendar-wrapper">
+            <!-- Calendar Header with Month Navigation -->
+            <div class="calendar-header">
+                <button id="prevMonthBtn" class="month-nav-btn">← Previous</button>
+                <h2 id="monthYearDisplay">Month Year</h2>
+                <button id="nextMonthBtn" class="month-nav-btn">Next →</button>
+            </div>
+
+            <!-- Color Legend -->
+            <div class="activity-legend">
+                <div class="legend-item high">
+                    <span class="legend-color"></span>
+                    <span>High Activity (60+)</span>
+                </div>
+                <div class="legend-item medium">
+                    <span class="legend-color"></span>
+                    <span>Medium Activity (30-59)</span>
+                </div>
+                <div class="legend-item low">
+                    <span class="legend-color"></span>
+                    <span>Low Activity (0-29)</span>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="calendar-grid">
+                <div class="weekday-header">Sun</div>
+                <div class="weekday-header">Mon</div>
+                <div class="weekday-header">Tue</div>
+                <div class="weekday-header">Wed</div>
+                <div class="weekday-header">Thu</div>
+                <div class="weekday-header">Fri</div>
+                <div class="weekday-header">Sat</div>
+
+                <!-- Calendar dates will be populated by JavaScript -->
+                <div id="calendarDates" class="calendar-dates-container"></div>
+            </div>
+        </div>
+
+        <!-- Data Panel (Floating Card) -->
+        <div id="dataPanel" class="data-panel hidden">
+            <button class="close-btn" id="closePanelBtn">&times;</button>
+            
+            <div class="panel-header">
+                <h3 id="panelDate">📅 Select a Date</h3>
+            </div>
+
+            <div class="panel-content">
+                <div class="stat-item">
+                    <span class="stat-label">👥 New Users:</span>
+                    <span class="stat-value" id="statUsers">-</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">📦 Posts:</span>
+                    <span class="stat-value" id="statPosts">-</span>
+                    <div class="stat-breakdown">
+                        (<span id="statLost">0</span> Lost, <span id="statFound">0</span> Found)
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">🔄 Recovered Items:</span>
+                    <span class="stat-value" id="statRecovered">-</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-label">💬 Messages:</span>
+                    <span class="stat-value" id="statMessages">-</span>
+                </div>
+
+                <!-- Activity Indicator -->
+                <div class="activity-indicator-container">
+                    <p class="activity-label">Activity Level</p>
+                    <div class="activity-bar">
+                        <div class="activity-fill" id="activityFill"></div>
+                    </div>
+                    <p class="activity-percentage" id="activityPercentage">0%</p>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Loading analytics...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'js/calendar-analytics.js' %}"></script>
+{% endblock %}

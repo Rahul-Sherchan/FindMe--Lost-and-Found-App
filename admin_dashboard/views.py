@@ -3,13 +3,15 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
+from django.http import JsonResponse
 import json
 from datetime import date, timedelta, datetime
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth, TruncWeek
 from accounts.models import User, Transaction
 from items.models import Item, Claim
 from notifications.models import Notification
+from messaging.models import Message
 
 def is_admin(user):
     return user.is_authenticated and (user.is_staff or user.user_type == 'admin')
@@ -291,101 +293,220 @@ def user_detail(request, pk):
 
 @login_required
 @user_passes_test(is_admin)
-def reports(request):
-    # STEP 1: Read GET params
-    view_mode = request.GET.get('view', 'monthly')  # 'monthly' or 'weekly'
-    start_str = request.GET.get('start', '')
-    end_str   = request.GET.get('end', '')
-
-    # STEP 2: Parse or default dates
-    today = date.today()
+def calendar_analytics(request):
+    """Display calendar analytics view with empty calendar script"""
     try:
-        if start_str and end_str:
-            start = datetime.strptime(start_str, '%Y-%m-%d').date()
-            end   = datetime.strptime(end_str,   '%Y-%m-%d').date()
-        else:
-            raise ValueError("use defaults")
-    except (ValueError, TypeError):
-        if view_mode == 'weekly':
-            start = today - timedelta(weeks=7)
-        else:
-            start = today - timedelta(days=365)
-        end = today
-
-    # STEP 3: Summary counts (filter by created_at date range)
-    base_qs = Item.objects.filter(
-        created_at__date__gte=start,
-        created_at__date__lte=end
-    )
-    total_lost     = base_qs.filter(item_type='lost').count()
-    total_found    = base_qs.filter(item_type='found').count()
-    total_resolved = base_qs.filter(status='resolved').count()
-    total_items    = total_lost + total_found
-
-    # STEP 4: Compute percentages (avoid division by zero)
-    lost_pct    = round(total_lost    / total_items * 100) if total_items > 0 else 0
-    found_pct   = round(total_found   / total_items * 100) if total_items > 0 else 0
-    return_rate = round(total_resolved / total_items * 100) if total_items > 0 else 0
-
-    # STEP 5: Chart data grouped by period
-    trunc_fn = TruncMonth if view_mode == 'monthly' else TruncWeek
-
-    def get_period_data(queryset):
-        return {
-            row['period']: row['count']
-            for row in queryset.annotate(period=trunc_fn('created_at'))
-                               .values('period')
-                               .annotate(count=Count('id'))
-                               .order_by('period')
+        year_param = request.GET.get('year')
+        month_param = request.GET.get('month')
+        
+        # Use current date as default
+        today = timezone.now()
+        year = today.year
+        month = today.month
+        
+        # Override with parameters if provided
+        if year_param:
+            try:
+                year = int(year_param)
+                # Validate year range
+                if year < 1900 or year > 2100:
+                    year = today.year
+            except (ValueError, TypeError):
+                year = today.year
+        
+        if month_param:
+            try:
+                month = int(month_param)
+                # Validate month range
+                if month < 1 or month > 12:
+                    month = today.month
+            except (ValueError, TypeError):
+                month = today.month
+        
+        context = {
+            'year': year,
+            'month': month,
+            'pending_claims_count': get_pending_claims_count(),
+            'current_date': timezone.now().date(),
         }
+        return render(request, 'admin_dashboard/calendar_analytics.html', context)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Return a safe response even if something goes wrong
+        context = {
+            'year': 2026,
+            'month': 4,
+            'pending_claims_count': 0,
+            'current_date': timezone.now().date(),
+            'error': 'An error occurred loading the calendar'
+        }
+        return render(request, 'admin_dashboard/calendar_analytics.html', context)
 
-    lost_data     = get_period_data(
-        Item.objects.filter(item_type='lost',
-            created_at__date__gte=start, created_at__date__lte=end))
-    found_data    = get_period_data(
-        Item.objects.filter(item_type='found',
-            created_at__date__gte=start, created_at__date__lte=end))
-    resolved_data = get_period_data(
-        Item.objects.filter(status='resolved',
-            created_at__date__gte=start, created_at__date__lte=end))
 
-    # Collect all unique periods from all three datasets
-    all_periods = sorted(
-        set(lost_data.keys()) | set(found_data.keys()) | set(resolved_data.keys())
-    )
+@login_required
+@user_passes_test(is_admin)
+def calendar_data_api(request):
+    """API endpoint to fetch analytics data for a specific date or date range"""
+    date_str = request.GET.get('date', None)
+    
+    if not date_str:
+        return JsonResponse({'error': 'Date parameter required'}, status=400)
+    
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
+    
+    try:
+        # Fetch data for the given date
+        # 1. New users registered on this date
+        new_users = User.objects.filter(
+            date_joined__date=target_date
+        ).count()
+        
+        # 2. Posts created on this date (separated by type)
+        lost_posts = Item.objects.filter(
+            created_at__date=target_date,
+            item_type='lost'
+        ).count()
+        
+        found_posts = Item.objects.filter(
+            created_at__date=target_date,
+            item_type='found'
+        ).count()
+        
+        total_posts = lost_posts + found_posts
+        
+        # 3. Recovered items (items marked as resolved/claimed on this date)
+        recovered_items = Item.objects.filter(
+            Q(status='resolved') | Q(status='claimed'),
+            updated_at__date=target_date
+        ).count()
+        
+        # 4. Messages exchanged on this date
+        messages_count = Message.objects.filter(
+            created_at__date=target_date
+        ).count()
+        
+        # Calculate activity level (0-100) for color-coding
+        # Weights: Users (2), Posts (3), Recovered (5), Messages (1)
+        activity_score = (
+            (int(new_users) * 2) +          # Up to 20 points
+            (int(total_posts) * 3) +        # Up to 40+ points
+            (int(recovered_items) * 5) +    # Up to 20+ points
+            (int(messages_count) * 1)       # Up to 20+ points
+        )
+        
+        # Normalize to 0-100 scale and cap at 100
+        activity_level = min(int((activity_score / 100) * 100), 100)
+        activity_level = max(0, activity_level)  # Ensure not negative
+        
+        # Determine activity category
+        if activity_level >= 60:
+            activity_category = 'high'  # Green
+        elif activity_level >= 30:
+            activity_category = 'medium'  # Yellow
+        else:
+            activity_category = 'low'  # Red
+        
+        return JsonResponse({
+            'date': date_str,
+            'new_users': int(new_users),
+            'lost_posts': int(lost_posts),
+            'found_posts': int(found_posts),
+            'total_posts': int(total_posts),
+            'recovered_items': int(recovered_items),
+            'messages_count': int(messages_count),
+            'activity_level': int(activity_level),
+            'activity_category': activity_category,
+        }, safe=True)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
 
-    # Format labels based on view mode
-    if view_mode == 'monthly':
-        chart_labels = [p.strftime('%b %Y') for p in all_periods]
-    else:
-        chart_labels = [f"W/E {p.strftime('%d %b')}" for p in all_periods]
 
-    chart_lost     = [lost_data.get(p, 0)     for p in all_periods]
-    chart_found    = [found_data.get(p, 0)    for p in all_periods]
-    chart_resolved = [resolved_data.get(p, 0) for p in all_periods]
-
-    # STEP 6: Recent resolved items table
-    recent_resolved = Item.objects.filter(
-        status='resolved',
-        created_at__date__gte=start,
-        created_at__date__lte=end
-    ).select_related('user', 'category').order_by('-created_at')[:15]
-
-    context = {
-        'total_lost':      total_lost,
-        'total_found':     total_found,
-        'total_resolved':  total_resolved,
-        'total_items':     total_items,
-        'lost_pct':        lost_pct,
-        'found_pct':       found_pct,
-        'return_rate':     return_rate,
-        'chart_labels':    json.dumps(chart_labels),
-        'chart_lost':      json.dumps(chart_lost),
-        'chart_found':     json.dumps(chart_found),
-        'chart_resolved':  json.dumps(chart_resolved),
-        'recent_resolved': recent_resolved,
-        'view_mode':       view_mode,
-        'start':           start.strftime('%Y-%m-%d'),
-        'end':             end.strftime('%Y-%m-%d'),
-    }
-    return render(request, 'admin_dashboard/reports.html', context)
+@login_required
+@user_passes_test(is_admin)
+def calendar_month_data_api(request):
+    """API endpoint to fetch activity data for all dates in a month for color-coding"""
+    year = request.GET.get('year')
+    month = request.GET.get('month')
+    
+    if not year or not month:
+        return JsonResponse({'error': 'Year and month parameters required'}, status=400)
+    
+    try:
+        year = int(year)
+        month = int(month)
+        
+        # Validate year and month
+        if year < 1900 or year > 2100:
+            return JsonResponse({'error': 'Year must be between 1900 and 2100'}, status=400)
+        if month < 1 or month > 12:
+            return JsonResponse({'error': 'Month must be between 1 and 12'}, status=400)
+            
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Invalid year or month. Must be integers.'}, status=400)
+    
+    try:
+        # Generate list of all dates in the month
+        from calendar import monthrange
+        last_day = monthrange(year, month)[1]
+        
+        activity_data = {}
+        
+        for day in range(1, last_day + 1):
+            try:
+                date_obj = date(year, month, day)
+                
+                # Calculate activity score for this day
+                new_users = User.objects.filter(date_joined__date=date_obj).count()
+                lost_posts = Item.objects.filter(created_at__date=date_obj, item_type='lost').count()
+                found_posts = Item.objects.filter(created_at__date=date_obj, item_type='found').count()
+                recovered = Item.objects.filter(
+                    Q(status='resolved') | Q(status='claimed'),
+                    updated_at__date=date_obj
+                ).count()
+                msg_count = Message.objects.filter(created_at__date=date_obj).count()
+                
+                # Ensure all values are integers
+                new_users = int(new_users) if new_users else 0
+                lost_posts = int(lost_posts) if lost_posts else 0
+                found_posts = int(found_posts) if found_posts else 0
+                recovered = int(recovered) if recovered else 0
+                msg_count = int(msg_count) if msg_count else 0
+                
+                activity_score = (new_users * 2) + ((lost_posts + found_posts) * 3) + (recovered * 5) + (msg_count * 1)
+                activity_level = min(int((activity_score / 100) * 100), 100)
+                activity_level = max(0, activity_level)  # Ensure not negative
+                
+                if activity_level >= 60:
+                    category = 'high'
+                elif activity_level >= 30:
+                    category = 'medium'
+                else:
+                    category = 'low'
+                
+                activity_data[day] = {
+                    'level': activity_level,
+                    'category': category,
+                }
+            except Exception as e:
+                # Log error for this specific day but continue with others
+                print(f"Error calculating activity for {year}-{month}-{day}: {str(e)}")
+                activity_data[day] = {
+                    'level': 0,
+                    'category': 'low',
+                }
+        
+        return JsonResponse({
+            'year': year,
+            'month': month,
+            'data': activity_data,
+        }, safe=True)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)

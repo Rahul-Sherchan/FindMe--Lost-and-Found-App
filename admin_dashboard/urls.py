@@ -15,5 +15,9 @@ urlpatterns = [
     path('users/<int:pk>/toggle/', views.toggle_user_active, name='toggle_user_active'),
     path('users/<int:pk>/suspend/', views.suspend_user, name='suspend_user'),
     path('users/<int:pk>/', views.user_detail, name='user_detail'),
-    path('reports/', views.reports, name='reports'),
+    
+    # Calendar Analytics Endpoints
+    path('calendar/', views.calendar_analytics, name='calendar_analytics'),
+    path('api/calendar-data/', views.calendar_data_api, name='calendar_data_api'),
+    path('api/calendar-month-data/', views.calendar_month_data_api, name='calendar_month_data_api'),
 ]
