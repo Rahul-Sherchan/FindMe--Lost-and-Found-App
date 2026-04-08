@@ -389,27 +389,6 @@ def calendar_data_api(request):
             created_at__date=target_date
         ).count()
         
-        # Calculate activity level (0-100) for color-coding
-        # Weights: Users (2), Posts (3), Recovered (5), Messages (1)
-        activity_score = (
-            (int(new_users) * 2) +          # Up to 20 points
-            (int(total_posts) * 3) +        # Up to 40+ points
-            (int(recovered_items) * 5) +    # Up to 20+ points
-            (int(messages_count) * 1)       # Up to 20+ points
-        )
-        
-        # Normalize to 0-100 scale and cap at 100
-        activity_level = min(int((activity_score / 100) * 100), 100)
-        activity_level = max(0, activity_level)  # Ensure not negative
-        
-        # Determine activity category
-        if activity_level >= 60:
-            activity_category = 'high'  # Green
-        elif activity_level >= 30:
-            activity_category = 'medium'  # Yellow
-        else:
-            activity_category = 'low'  # Red
-        
         return JsonResponse({
             'date': date_str,
             'new_users': int(new_users),
@@ -418,8 +397,6 @@ def calendar_data_api(request):
             'total_posts': int(total_posts),
             'recovered_items': int(recovered_items),
             'messages_count': int(messages_count),
-            'activity_level': int(activity_level),
-            'activity_category': activity_category,
         }, safe=True)
     except Exception as e:
         import traceback
@@ -478,28 +455,11 @@ def calendar_month_data_api(request):
                 recovered = int(recovered) if recovered else 0
                 msg_count = int(msg_count) if msg_count else 0
                 
-                activity_score = (new_users * 2) + ((lost_posts + found_posts) * 3) + (recovered * 5) + (msg_count * 1)
-                activity_level = min(int((activity_score / 100) * 100), 100)
-                activity_level = max(0, activity_level)  # Ensure not negative
-                
-                if activity_level >= 60:
-                    category = 'high'
-                elif activity_level >= 30:
-                    category = 'medium'
-                else:
-                    category = 'low'
-                
-                activity_data[day] = {
-                    'level': activity_level,
-                    'category': category,
-                }
+                activity_data[day] = {}
             except Exception as e:
                 # Log error for this specific day but continue with others
                 print(f"Error calculating activity for {year}-{month}-{day}: {str(e)}")
-                activity_data[day] = {
-                    'level': 0,
-                    'category': 'low',
-                }
+                activity_data[day] = {}
         
         return JsonResponse({
             'year': year,

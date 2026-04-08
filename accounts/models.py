@@ -13,7 +13,7 @@ class User(AbstractUser):
     )
     
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='normal')
-    phone_number = models.CharField(max_length=20, blank=True, null=True, help_text="Full phone number with country code")
+    phone_number = models.CharField(max_length=10, blank=True, null=True, help_text="Mobile number (10 digits, starts with 98 or 97)")
     recovery_email = models.EmailField(blank=True, null=True, help_text="Optional recovery email for password resets")
     address = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)

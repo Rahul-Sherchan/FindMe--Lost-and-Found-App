@@ -30,8 +30,6 @@ class CalendarAnalytics {
             found: document.getElementById('statFound'),
             recovered: document.getElementById('statRecovered'),
             messages: document.getElementById('statMessages'),
-            activityFill: document.getElementById('activityFill'),
-            activityPercentage: document.getElementById('activityPercentage'),
         };
 
         // Validate all elements exist
@@ -204,12 +202,9 @@ class CalendarAnalytics {
         } else {
             const dateStr = this.formatDateForAPI(dateObj);
 
-            // Add activity class if data is available
+            // Add tooltip with activity level
             if (this.monthData[day]) {
-                dateElement.classList.add(`activity-${this.monthData[day].category}`);
-                
-                // Add tooltip
-                dateElement.title = `Activity Level: ${this.monthData[day].level}%`;
+                dateElement.title = `Activity: ${this.monthData[day].level}%`;
             }
 
             if (isToday) {
@@ -219,14 +214,6 @@ class CalendarAnalytics {
             // Add click event to fetch detailed data
             dateElement.addEventListener('click', () => {
                 this.showDateData(dateStr, day);
-            });
-
-            // Add hover effect to show tooltip
-            dateElement.addEventListener('mouseenter', () => {
-                if (this.monthData[day]) {
-                    const activity = this.monthData[day];
-                    dateElement.title = `${activity.level}% Activity (${activity.category})`;
-                }
             });
         }
 
@@ -307,13 +294,8 @@ class CalendarAnalytics {
             if (dateElement.classList.contains('other-month')) return;
 
             if (this.monthData[day]) {
-                // Remove old activity classes
-                dateElement.classList.remove('activity-high', 'activity-medium', 'activity-low');
-
-                // Add new activity class
                 const activity = this.monthData[day];
-                dateElement.classList.add(`activity-${activity.category}`);
-                dateElement.title = `${activity.level}% Activity`;
+                dateElement.title = `Activity: ${activity.level}%`;
             }
         });
     }
@@ -404,7 +386,6 @@ class CalendarAnalytics {
             const foundPosts = Math.max(0, parseInt(data.found_posts || 0, 10));
             const recoveredItems = Math.max(0, parseInt(data.recovered_items || 0, 10));
             const messagesCount = Math.max(0, parseInt(data.messages_count || 0, 10));
-            const activityLevel = Math.max(0, Math.min(100, parseInt(data.activity_level || 0, 10)));
 
             // Check if there are no entries for this date
             const hasNoEntries = newUsers === 0 && totalPosts === 0 && recoveredItems === 0 && messagesCount === 0;
@@ -421,7 +402,7 @@ class CalendarAnalytics {
             }
 
             // Show stats
-            document.querySelectorAll('.stat-item, .activity-indicator-container').forEach(el => {
+            document.querySelectorAll('.stat-item').forEach(el => {
                 el.style.display = 'block';
             });
 
@@ -431,23 +412,6 @@ class CalendarAnalytics {
             this.statElements.found.textContent = foundPosts;
             this.statElements.recovered.textContent = recoveredItems;
             this.statElements.messages.textContent = messagesCount;
-
-            // Update activity indicator
-            this.statElements.activityFill.style.width = `${activityLevel}%`;
-            this.statElements.activityPercentage.textContent = `${activityLevel}%`;
-
-            // Change activity fill color based on level
-            const fillElement = this.statElements.activityFill;
-            if (activityLevel >= 60) {
-                fillElement.style.background = 'linear-gradient(90deg, #10b981, #059669)';
-                fillElement.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.8)';
-            } else if (activityLevel >= 30) {
-                fillElement.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-                fillElement.style.boxShadow = '0 0 12px rgba(245, 158, 11, 0.8)';
-            } else {
-                fillElement.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-                fillElement.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.8)';
-            }
         } catch (error) {
             console.error('Error populating data panel:', error);
             this.showError('Error displaying analytics data');
@@ -459,8 +423,8 @@ class CalendarAnalytics {
      */
     showNoEntriesMessage() {
         try {
-            // Hide all stat items and activity indicator
-            document.querySelectorAll('.stat-item, .activity-indicator-container').forEach(el => {
+            // Hide all stat items
+            document.querySelectorAll('.stat-item').forEach(el => {
                 el.style.display = 'none';
             });
 

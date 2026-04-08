@@ -34,11 +34,14 @@ class UserRegistrationForm(UserCreationForm):
         """Clean and validate phone number"""
         phone = self.cleaned_data.get('phone_number', '')
         if phone:
-            # Remove spaces, dashes, and parentheses
-            cleaned = re.sub(r'[\s\-\(\)]', '', phone)
-            # Ensure it starts with + and contains reasonable digits
-            if not re.match(r'^\+?[0-9]{7,20}$', cleaned):
-                raise ValidationError("Enter a valid phone number with country code.")
+            # Remove spaces, dashes, parentheses, and + sign
+            cleaned = re.sub(r'[\s\-\(\)\+]', '', phone)
+            # Remove country code if it starts with 977 (Nepal)
+            if cleaned.startswith('977'):
+                cleaned = cleaned[3:]  # Remove 977 and keep the rest
+            # Validate: exactly 10 digits, starts with 98 or 97
+            if not (len(cleaned) == 10 and cleaned.isdigit() and cleaned[:2] in ['98', '97']):
+                raise ValidationError("Phone number must be 10 digits, starting with 98 or 97.")
             return cleaned
         return phone
 
@@ -46,6 +49,7 @@ class UserRegistrationForm(UserCreationForm):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.recovery_email = self.cleaned_data.get('recovery_email') or None
+        user.phone_number = self.cleaned_data.get('phone_number') or None
         user.user_type = 'normal'
         user.is_premium = False
         if commit:
@@ -75,6 +79,21 @@ class UserProfileForm(forms.ModelForm):
         if recovery and primary and recovery.lower() == primary.lower():
             raise ValidationError("Recovery email must be different from your primary email.")
         return recovery
+
+    def clean_phone_number(self):
+        """Clean and validate phone number"""
+        phone = self.cleaned_data.get('phone_number', '')
+        if phone:
+            # Remove spaces, dashes, parentheses, and + sign
+            cleaned = re.sub(r'[\s\-\(\)\+]', '', phone)
+            # Remove country code if it starts with 977 (Nepal)
+            if cleaned.startswith('977'):
+                cleaned = cleaned[3:]  # Remove 977 and keep the rest
+            # Validate: exactly 10 digits, starts with 98 or 97
+            if not (len(cleaned) == 10 and cleaned.isdigit() and cleaned[:2] in ['98', '97']):
+                raise ValidationError("Phone number must be 10 digits, starting with 98 or 97.")
+            return cleaned
+        return phone
 
 
 class PasswordResetRequestForm(forms.Form):
