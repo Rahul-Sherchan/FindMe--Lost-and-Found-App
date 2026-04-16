@@ -94,3 +94,25 @@ class Transaction(models.Model):
     class Meta:
         db_table = 'transactions'
         ordering = ['-created_at']
+
+
+class KhaltiPayment(models.Model):
+    """Track Khalti payment records"""
+    PAYMENT_STATUS = (
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='khalti_payments')
+    token = models.CharField(max_length=200, unique=True)
+    amount = models.IntegerField(help_text='Amount in paisa (1 NPR = 100 paisa)')
+    status = models.CharField(max_length=10, choices=PAYMENT_STATUS, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.amount} paisa - {self.status}"
+
+    class Meta:
+        db_table = 'khalti_payments'
+        ordering = ['-created_at']

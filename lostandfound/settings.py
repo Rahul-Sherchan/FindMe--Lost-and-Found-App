@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-9rvy*m#r0re&&f5ty%42zq3wj7n18c4@_dpupy$t!a6#9nn#_#"
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-9rvy*m#r0re&&f5ty%42zq3wj7n18c4@_dpupy$t!a6#9nn#_#')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -86,15 +90,15 @@ WSGI_APPLICATION = "lostandfound.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# Database
+# Database - Configuration from .env
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'lost_and_found_db)',
-        'USER': 'root',
-        'PASSWORD': '',  # default XAMPP
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
+        'NAME': os.getenv('DB_NAME', 'lost_and_found_db'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
 
@@ -161,3 +165,10 @@ LOGOUT_REDIRECT_URL = "home"
 # Email configuration (console backend for development)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@lostandfound.com"
+
+# Khalti Payment Gateway — Configuration from .env
+KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY', 'b5b0db5b0f704aae922bf351f782c275')
+KHALTI_SECRET_KEY = os.getenv('KHALTI_SECRET_KEY', 'e5639a56c40a45c2a3f1f176e3b9b859')
+KHALTI_API_URL = os.getenv('KHALTI_API_URL', 'https://a.khalti.com/api/v2/')
+KHALTI_INITIATE_URL = os.getenv('KHALTI_INITIATE_URL', 'https://a.khalti.com/api/v2/epayment/initiate/')
+KHALTI_LOOKUP_URL = os.getenv('KHALTI_LOOKUP_URL', 'https://a.khalti.com/api/v2/epayment/lookup/')

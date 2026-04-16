@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Subscription, Transaction
+from .models import User, Subscription, Transaction, KhaltiPayment
 
 class CustomUserAdmin(UserAdmin):
     list_display = ['username', 'email', 'user_type', 'is_premium', 'points_balance', 'premium_expiry']
@@ -18,3 +18,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ['user', 'transaction_type', 'points', 'created_at']
     list_filter = ['transaction_type']
+
+@admin.register(KhaltiPayment)
+class KhaltiPaymentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'amount', 'status', 'token', 'created_at']
+    list_filter = ['status']
+    search_fields = ['user__username', 'token']
