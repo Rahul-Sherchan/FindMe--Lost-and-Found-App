@@ -13,20 +13,26 @@
     
     <style>
         :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --surface2: #1c2330;
-            --border: #2a3340;
-            --text: #e6edf3;
-            --muted: #7d8590;
-            --amber: #f0a500;
-            --amber-dim: rgba(240,165,0,0.12);
-            --red: #f85149;
-            --red-dim: rgba(248,81,73,0.12);
-            --green: #3fb950;
-            --green-dim: rgba(63,185,80,0.12);
-            --blue: #58a6ff;
-            --blue-dim: rgba(88,166,255,0.12);
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #334155;
+            --border: #475569;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dim: rgba(99, 102, 241, 0.12);
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.12);
+            --green: #10b981;
+            --green-dim: rgba(16, 185, 129, 0.12);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.12);
+            --amber: #f59e0b;
+            --amber-dim: rgba(245, 158, 11, 0.12);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -67,7 +73,7 @@
             transition: all 0.2s;
             font-size: 14px;
         }
-        .btn-amber { background: var(--amber); color: #000; }
+        .btn-amber { background: var(--primary); color: #fff; }
         .btn-amber:hover { opacity: 0.9; }
         .btn-red { background: var(--red); color: #fff; }
         .btn-red:hover { opacity: 0.9; }
@@ -90,7 +96,7 @@
         }
         .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
         .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
-        .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(240,165,0,0.3); }
+        .badge-amber { background: var(--primary-dim); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.3); }
         .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
         .badge-muted { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
 
@@ -115,7 +121,7 @@
             padding: 24px 20px;
             border-bottom: 1px solid var(--border);
         }
-        .brand-name { color: var(--amber); font-size: 28px; line-height: 1; }
+        .brand-name { color: var(--primary); font-size: 28px; line-height: 1; }
         .brand-subtitle { font-size: 11px; letter-spacing: 0.5px; color: var(--muted); margin-top: 4px; }
 
         .sidebar-nav { flex: 1; overflow-y: auto; padding: 20px 0; }
@@ -145,11 +151,11 @@
         .nav-link:hover i { color: var(--text); }
         
         .nav-link.active {
-            color: var(--amber);
-            border-left-color: var(--amber);
-            background: var(--amber-dim);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            background: var(--primary-dim);
         }
-        .nav-link.active i { color: var(--amber); }
+        .nav-link.active i { color: var(--primary); }
         
         .sidebar-footer {
             padding: 20px;
@@ -163,7 +169,7 @@
             height: 36px;
             border-radius: 50%;
             background: var(--surface2);
-            color: var(--amber);
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;

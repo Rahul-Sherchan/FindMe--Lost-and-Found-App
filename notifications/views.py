@@ -23,6 +23,10 @@ def mark_as_read(request, pk):
     notification.is_read = True
     notification.save()
     
+    # If it's an AJAX request, return JSON
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('Accept') == 'application/json':
+        return JsonResponse({'status': 'success'})
+    
     # Redirect to the link if provided
     if notification.link:
         return redirect(notification.link)
@@ -35,3 +39,24 @@ def mark_all_as_read(request):
     """Mark all notifications as read"""
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return redirect('notifications:notification_list')
+
+from django.http import JsonResponse
+from .models import SystemNotification, SystemNotificationReadStatus
+
+@login_required
+def mark_system_as_read(request, pk):
+    """Mark a global system notification as read for the current user."""
+    sys_notif = get_object_or_404(SystemNotification, pk=pk)
+    
+    # Create the read status mapping for this user specifically
+    SystemNotificationReadStatus.objects.get_or_create(
+        user=request.user,
+        notification=sys_notif,
+        defaults={'is_read': True}
+    )
+    
+    # If it's an AJAX request, return JSON
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('Accept') == 'application/json':
+        return JsonResponse({'status': 'success'})
+        
+    return redirect(request.META.get('HTTP_REFERER', 'notifications:notification_list'))

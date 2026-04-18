@@ -233,48 +233,52 @@ body {
 }
 
 /* Calendar Date Item */
-.calendar-date {
-    aspect-ratio: 1;
+.month-nav-icon-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 0.4rem;
+    width: 2.2rem;
+    height: 2.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(30, 41, 82, 0.5);
-    border: 1px solid var(--glass-border);
-    border-radius: 1rem;
     cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition);
-    position: relative;
-    overflow: hidden;
-    font-size: 1.1rem;
+    transition: transform 0.2s;
 }
 
-.calendar-date::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: inherit;
-    border-radius: 1rem;
-    z-index: -1;
-    transition: var(--transition);
+.month-nav-icon-btn:hover {
+    background: #059669;
+}
+.calendar-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: #f8fafc;
+    transition: all 0.2s ease;
 }
 
 .calendar-date:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
 }
 
 .calendar-date.other-month {
-    color: var(--text-tertiary);
+    color: #64748b;
     cursor: not-allowed;
-    opacity: 0.3;
+    background: transparent;
 }
 
 .calendar-date.other-month:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--glass-border);
+    background: transparent;
+    color: #64748b;
 }
 
 /* Activity-based coloring */
@@ -312,8 +316,11 @@ body {
 }
 
 .calendar-date.today {
-    border-width: 2px;
-    border-color: var(--primary-color);
+    background: #10b981;
+    color: white !important;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 /* Data Panel (Floating Card) */

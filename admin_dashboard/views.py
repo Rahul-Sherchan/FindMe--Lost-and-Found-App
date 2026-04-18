@@ -5,13 +5,16 @@ from django.utils import timezone
 from django.db import transaction
 from django.http import JsonResponse
 import json
-from datetime import date, timedelta, datetime
+from datetime import date, datetime, timedelta
 from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth, TruncWeek
 from accounts.models import User, Transaction
 from items.models import Item, Claim
-from notifications.models import Notification
+from notifications.models import Notification, SystemNotification
 from messaging.models import Message
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from .forms import AdminProfileForm
 
 def is_admin(user):
     return user.is_authenticated and (user.is_staff or user.user_type == 'admin')
@@ -389,6 +392,27 @@ def calendar_data_api(request):
             created_at__date=target_date
         ).count()
         
+        # Calculate activity level (0-100) for color-coding
+        # Weights: Users (2), Posts (3), Recovered (5), Messages (1)
+        activity_score = (
+            (int(new_users) * 2) +          # Up to 20 points
+            (int(total_posts) * 3) +        # Up to 40+ points
+            (int(recovered_items) * 5) +    # Up to 20+ points
+            (int(messages_count) * 1)       # Up to 20+ points
+        )
+        
+        # Normalize to 0-100 scale and cap at 100
+        activity_level = min(int((activity_score / 100) * 100), 100)
+        activity_level = max(0, activity_level)  # Ensure not negative
+        
+        # Determine activity category
+        if activity_level >= 60:
+            activity_category = 'high'  # Green
+        elif activity_level >= 30:
+            activity_category = 'medium'  # Yellow
+        else:
+            activity_category = 'low'  # Red
+        
         return JsonResponse({
             'date': date_str,
             'new_users': int(new_users),
@@ -397,6 +421,8 @@ def calendar_data_api(request):
             'total_posts': int(total_posts),
             'recovered_items': int(recovered_items),
             'messages_count': int(messages_count),
+            'activity_level': int(activity_level),
+            'activity_category': activity_category,
         }, safe=True)
     except Exception as e:
         import traceback
@@ -455,11 +481,28 @@ def calendar_month_data_api(request):
                 recovered = int(recovered) if recovered else 0
                 msg_count = int(msg_count) if msg_count else 0
                 
-                activity_data[day] = {}
+                activity_score = (new_users * 2) + ((lost_posts + found_posts) * 3) + (recovered * 5) + (msg_count * 1)
+                activity_level = min(int((activity_score / 100) * 100), 100)
+                activity_level = max(0, activity_level)  # Ensure not negative
+                
+                if activity_level >= 60:
+                    category = 'high'
+                elif activity_level >= 30:
+                    category = 'medium'
+                else:
+                    category = 'low'
+                
+                activity_data[day] = {
+                    'level': activity_level,
+                    'category': category,
+                }
             except Exception as e:
                 # Log error for this specific day but continue with others
                 print(f"Error calculating activity for {year}-{month}-{day}: {str(e)}")
-                activity_data[day] = {}
+                activity_data[day] = {
+                    'level': 0,
+                    'category': 'low',
+                }
         
         return JsonResponse({
             'year': year,
@@ -470,3 +513,79 @@ def calendar_month_data_api(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
+
+@login_required
+@user_passes_test(is_admin)
+def manage_announcements(request):
+    """View and create global system announcements"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        message = request.POST.get('message')
+        
+        if title and message:
+            SystemNotification.objects.create(
+                title=title,
+                message=message,
+                created_by=request.user
+            )
+            messages.success(request, 'Announcement created globally for all users.')
+            return redirect('admin_dashboard:manage_announcements')
+        else:
+            messages.error(request, 'Title and message are required.')
+            
+    announcements = SystemNotification.objects.all().order_by('-created_at')
+    
+    context = {
+        'announcements': announcements,
+        'pending_claims_count': get_pending_claims_count(),
+    }
+    return render(request, 'admin_dashboard/manage_announcements.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def delete_announcement(request, pk):
+    """Delete a global system announcement"""
+    announcement = get_object_or_404(SystemNotification, pk=pk)
+    
+    if request.method == 'POST':
+        announcement.delete()
+        messages.success(request, 'Announcement deleted successfully.')
+        
+    return redirect('admin_dashboard:manage_announcements')
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_profile(request):
+    """Allows admin to view/edit their profile and change their password securely."""
+    # Initialize both forms
+    profile_form = AdminProfileForm(instance=request.user)
+    password_form = PasswordChangeForm(request.user)
+
+    if request.method == 'POST':
+        if 'update_profile' in request.POST:
+            profile_form = AdminProfileForm(request.POST, request.FILES, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Profile updated successfully.')
+                return redirect('admin_dashboard:admin_profile')
+            else:
+                messages.error(request, 'Please correct the errors in the profile form.')
+        
+        elif 'change_password' in request.POST:
+            password_form = PasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)  # Keep user logged in
+                messages.success(request, 'Your password was successfully updated!')
+                return redirect('admin_dashboard:admin_profile')
+            else:
+                messages.error(request, 'Please correct the errors in the password form.')
+
+    context = {
+        'profile_form': profile_form,
+        'password_form': password_form,
+        'pending_claims_count': get_pending_claims_count(),
+    }
+    return render(request, 'admin_dashboard/admin_profile.html', context)

@@ -17,6 +17,7 @@ class CalendarAnalytics {
         this.calendarDatesContainer = document.getElementById('calendarDates');
         this.prevMonthBtn = document.getElementById('prevMonthBtn');
         this.nextMonthBtn = document.getElementById('nextMonthBtn');
+        this.todayBtn = document.getElementById('todayBtn');
         this.dataPanel = document.getElementById('dataPanel');
         this.closePanelBtn = document.getElementById('closePanelBtn');
         this.panelDate = document.getElementById('panelDate');
@@ -24,12 +25,9 @@ class CalendarAnalytics {
 
         // Stat elements
         this.statElements = {
-            users: document.getElementById('statUsers'),
             posts: document.getElementById('statPosts'),
             lost: document.getElementById('statLost'),
             found: document.getElementById('statFound'),
-            recovered: document.getElementById('statRecovered'),
-            messages: document.getElementById('statMessages'),
         };
 
         // Validate all elements exist
@@ -50,6 +48,7 @@ class CalendarAnalytics {
             this.calendarDatesContainer,
             this.prevMonthBtn,
             this.nextMonthBtn,
+            this.todayBtn,
             this.dataPanel,
             this.closePanelBtn,
             this.panelDate,
@@ -67,6 +66,7 @@ class CalendarAnalytics {
             if (!this.calendarDatesContainer) missingElements.push('calendarDatesContainer');
             if (!this.prevMonthBtn) missingElements.push('prevMonthBtn');
             if (!this.nextMonthBtn) missingElements.push('nextMonthBtn');
+            if (!this.todayBtn) missingElements.push('todayBtn');
             if (!this.dataPanel) missingElements.push('dataPanel');
             if (!this.closePanelBtn) missingElements.push('closePanelBtn');
             if (!this.panelDate) missingElements.push('panelDate');
@@ -88,6 +88,11 @@ class CalendarAnalytics {
         try {
             this.prevMonthBtn.addEventListener('click', () => this.previousMonth());
             this.nextMonthBtn.addEventListener('click', () => this.nextMonth());
+            this.todayBtn.addEventListener('click', () => {
+                const today = new Date();
+                this.currentDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+                this.render();
+            });
             this.closePanelBtn.addEventListener('click', () => this.closePanel());
 
             // Close panel when clicking outside
@@ -182,7 +187,7 @@ class CalendarAnalytics {
 
         // Next month's dates (dimmed)
         const totalCells = this.calendarDatesContainer.children.length;
-        const nextMonthDays = Math.max(0, 42 - totalCells); // 6 weeks × 7 days
+        const nextMonthDays = Math.max(0, 42 - totalCells); // 6 weeks ├ù 7 days
         for (let day = 1; day <= nextMonthDays; day++) {
             const dateStr = new Date(year, month + 1, day);
             this.createDateElement(day, dateStr, true);
@@ -202,9 +207,12 @@ class CalendarAnalytics {
         } else {
             const dateStr = this.formatDateForAPI(dateObj);
 
-            // Add tooltip with activity level
+            // Add activity class if data is available
             if (this.monthData[day]) {
-                dateElement.title = `Activity: ${this.monthData[day].level}%`;
+                dateElement.classList.add(`activity-${this.monthData[day].category}`);
+                
+                // Add tooltip
+                dateElement.title = `Activity Level: ${this.monthData[day].level}%`;
             }
 
             if (isToday) {
@@ -214,6 +222,14 @@ class CalendarAnalytics {
             // Add click event to fetch detailed data
             dateElement.addEventListener('click', () => {
                 this.showDateData(dateStr, day);
+            });
+
+            // Add hover effect to show tooltip
+            dateElement.addEventListener('mouseenter', () => {
+                if (this.monthData[day]) {
+                    const activity = this.monthData[day];
+                    dateElement.title = `${activity.level}% Activity (${activity.category})`;
+                }
             });
         }
 
@@ -294,8 +310,13 @@ class CalendarAnalytics {
             if (dateElement.classList.contains('other-month')) return;
 
             if (this.monthData[day]) {
+                // Remove old activity classes
+                dateElement.classList.remove('activity-high', 'activity-medium', 'activity-low');
+
+                // Add new activity class
                 const activity = this.monthData[day];
-                dateElement.title = `Activity: ${activity.level}%`;
+                dateElement.classList.add(`activity-${activity.category}`);
+                dateElement.title = `${activity.level}% Activity`;
             }
         });
     }
@@ -366,7 +387,7 @@ class CalendarAnalytics {
             const options = { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' };
             const formattedDate = dateObj.toLocaleDateString('en-US', options);
 
-            this.panelDate.textContent = `📅 ${formattedDate}`;
+            this.panelDate.textContent = `­ƒôà ${formattedDate}`;
 
             // Check if the selected date is in the future
             const today = new Date();
@@ -384,11 +405,9 @@ class CalendarAnalytics {
             const totalPosts = Math.max(0, parseInt(data.total_posts || 0, 10));
             const lostPosts = Math.max(0, parseInt(data.lost_posts || 0, 10));
             const foundPosts = Math.max(0, parseInt(data.found_posts || 0, 10));
-            const recoveredItems = Math.max(0, parseInt(data.recovered_items || 0, 10));
-            const messagesCount = Math.max(0, parseInt(data.messages_count || 0, 10));
-
+            
             // Check if there are no entries for this date
-            const hasNoEntries = newUsers === 0 && totalPosts === 0 && recoveredItems === 0 && messagesCount === 0;
+            const hasNoEntries = totalPosts === 0;
             if (hasNoEntries) {
                 // No entries detected - show "No entries detected" message
                 this.showNoEntriesMessage();
@@ -402,16 +421,13 @@ class CalendarAnalytics {
             }
 
             // Show stats
-            document.querySelectorAll('.stat-item').forEach(el => {
+            document.querySelectorAll('.stat-item, .activity-indicator-container').forEach(el => {
                 el.style.display = 'block';
             });
 
-            this.statElements.users.textContent = newUsers;
             this.statElements.posts.textContent = totalPosts;
             this.statElements.lost.textContent = lostPosts;
             this.statElements.found.textContent = foundPosts;
-            this.statElements.recovered.textContent = recoveredItems;
-            this.statElements.messages.textContent = messagesCount;
         } catch (error) {
             console.error('Error populating data panel:', error);
             this.showError('Error displaying analytics data');
@@ -423,8 +439,8 @@ class CalendarAnalytics {
      */
     showNoEntriesMessage() {
         try {
-            // Hide all stat items
-            document.querySelectorAll('.stat-item').forEach(el => {
+            // Hide all stat items and activity indicator
+            document.querySelectorAll('.stat-item, .activity-indicator-container').forEach(el => {
                 el.style.display = 'none';
             });
 
@@ -436,7 +452,7 @@ class CalendarAnalytics {
                 noEntriesMsg.className = 'no-entries-message';
                 noEntriesMsg.innerHTML = `
                     <div style="text-align: center; padding: 2rem 1rem; color: #9ca3af;">
-                        <p style="font-size: 3rem; margin-bottom: 1rem;">📭</p>
+                        <p style="font-size: 3rem; margin-bottom: 1rem;">­ƒô¡</p>
                         <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">No entries detected</p>
                         <p style="font-size: 0.9rem; color: #6b7280;">This date is in the future. No data available yet.</p>
                     </div>
