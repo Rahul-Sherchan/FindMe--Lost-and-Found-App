@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages — FindMe{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Page wrapper ── */
+  .conv-page { max-width: 760px; margin: 2.5rem auto; padding: 0 1.25rem; }
+
+  .conv-title {
+    font-size: 1.6rem; font-weight: 800; color: #f8fafc;
+    display: flex; align-items: center; gap: .65rem; margin-bottom: .3rem;
+  }
+  .conv-subtitle { color: #94a3b8; font-size: .9rem; margin-bottom: 1.5rem; }
+
+  /* ── Panel ── */
+  .conv-panel {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 1rem; overflow: hidden;
+  }
+  .conv-panel-hdr {
+    background: rgba(99,102,241,.07); border-bottom: 1px solid rgba(99,102,241,.15);
+    padding: .85rem 1.35rem; font-size: .9rem; font-weight: 600; color: #e2e8f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* ── Conversation row ── */
+  .conv-item {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.35rem;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    text-decoration: none; color: inherit;
+    transition: background .2s;
+  }
+  .conv-item:last-child { border-bottom: none; }
+  .conv-item:hover { background: rgba(99,102,241,.07); }
+
+  /* Avatar */
+  .avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid rgba(99,102,241,.3);
+  }
+  .avatar-placeholder {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(99,102,241,.15); border: 2px solid rgba(99,102,241,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #818cf8;
+  }
+
+  /* Content */
+  .conv-content { flex: 1; min-width: 0; }
+  .conv-top { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; margin-bottom: .2rem; }
+  .conv-name { font-weight: 700; color: #f1f5f9; font-size: .95rem; }
+  .conv-time { font-size: .75rem; color: #475569; flex-shrink: 0; }
+  .conv-item-name { font-size: .8rem; color: #6366f1; font-weight: 500; margin-bottom: .15rem; }
+  .conv-preview { font-size: .82rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px; }
+
+  /* Unread badge */
+  .unread-dot {
+    width: 10px; height: 10px; background: #6366f1; border-radius: 50%;
+    flex-shrink: 0; box-shadow: 0 0 6px rgba(99,102,241,.5);
+  }
+  .unread-count {
+    background: #6366f1; color: #fff; font-size: .7rem; font-weight: 700;
+    padding: .15rem .5rem; border-radius: 9999px; flex-shrink: 0;
+  }
+
+  /* ── Empty state ── */
+  .empty-state { padding: 3rem; text-align: center; }
+  .empty-icon { font-size: 3rem; color: #1e293b; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="conv-page">
+
+  <h1 class="conv-title"><i class="fas fa-comments" style="color:#6366f1;"></i> Messages</h1>
+  <p class="conv-subtitle">All your conversations about lost and found items.</p>
+
+  <div class="conv-panel">
+    <div class="conv-panel-hdr">
+      <span><i class="fas fa-inbox" style="color:#818cf8;"></i> Your Conversations</span>
+      <span style="color:#64748b;font-size:.78rem;">{{ conversations|length }} conversation{{ conversations|length|pluralize }}</span>
+    </div>
+
+    {% if conversations %}
+      {% for conversation in conversations %}
+      <a href="{% url 'messaging:conversation_detail' conversation.pk %}" class="conv-item">
+
+        <!-- Avatar -->
+        <div>
+          {% if conversation.participant1 == user %}
+            {% if conversation.participant2.profile_picture %}
+              <img src="{{ conversation.participant2.profile_picture.url }}" alt="{{ conversation.participant2.username }}" class="avatar">
+            {% else %}
+              <div class="avatar-placeholder"><i class="fas fa-user"></i></div>
+            {% endif %}
+          {% else %}
+            {% if conversation.participant1.profile_picture %}
+              <img src="{{ conversation.participant1.profile_picture.url }}" alt="{{ conversation.participant1.username }}" class="avatar">
+            {% else %}
+              <div class="avatar-placeholder"><i class="fas fa-user"></i></div>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- Content -->
+        <div class="conv-content">
+          <div class="conv-top">
+            <span class="conv-name">
+              {% if conversation.participant1 == user %}
+                {{ conversation.participant2.username }}
+              {% else %}
+                {{ conversation.participant1.username }}
+              {% endif %}
+            </span>
+            <span class="conv-time">{{ conversation.updated_at|timesince }} ago</span>
+          </div>
+
+          <div class="conv-item-name">
+            <i class="fas fa-tag" style="font-size:.7rem;"></i> {{ conversation.item.title }}
+          </div>
+
+          {% if conversation.messages.last %}
+          <div class="conv-preview">
+            {% if conversation.messages.last.sender == user %}
+              <span style="color:#475569;">You:</span>
+            {% endif %}
+            {{ conversation.messages.last.content|truncatechars:60 }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Unread indicator -->
+        {% if conversation.unread_count > 0 %}
+        <span class="unread-count">{{ conversation.unread_count }}</span>
+        {% endif %}
+
+      </a>
+      {% endfor %}
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-comments"></i></div>
+        <h3 style="color:#334155;margin-bottom:.5rem;">No conversations yet</h3>
+        <p style="color:#64748b;margin-bottom:1.25rem;">
+          Browse items and click <strong style="color:#818cf8;">Message</strong> to start a conversation.
+        </p>
+        <a href="{% url 'items:item_list' %}" style="display:inline-flex;align-items:center;gap:.45rem;padding:.65rem 1.4rem;background:#6366f1;color:#fff;border-radius:.6rem;text-decoration:none;font-weight:600;">
+          <i class="fas fa-search"></i> Browse Items
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}
