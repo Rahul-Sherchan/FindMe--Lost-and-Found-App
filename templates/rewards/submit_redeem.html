@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Request Redemption — FindMe{% endblock %}
+
+{% block extra_css %}
+<style>
+  .redeem-page { max-width: 580px; margin: 3rem auto; padding: 0 1rem; }
+
+  .redeem-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:1.25rem; overflow:hidden; }
+
+  .redeem-hdr {
+    background:rgba(16,185,129,.07); border-bottom:1px solid rgba(16,185,129,.2);
+    padding:1.2rem 1.5rem; display:flex; align-items:center; gap:.75rem;
+  }
+  .redeem-hdr h2 { margin:0; font-size:1.15rem; font-weight:700; color:#f8fafc; }
+
+  .redeem-body { padding:1.65rem 1.5rem; }
+
+  .info-row { display:flex; justify-content:space-between; padding:.55rem 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:.875rem; }
+  .info-row:last-child { border-bottom:none; }
+  .il { color:#94a3b8; }
+  .iv { color:#f1f5f9; font-weight:600; }
+
+  .form-label { display:block; color:#94a3b8; font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.35rem; }
+  .form-ctrl {
+    width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+    border-radius:.55rem; padding:.7rem .95rem; color:#f1f5f9; font-size:.95rem;
+    transition:border-color .2s; box-sizing:border-box;
+  }
+  .form-ctrl:focus { outline:none; border-color:#10b981; }
+  .form-hint { font-size:.78rem; color:#64748b; margin-top:.35rem; }
+
+  .preview-box {
+    background:rgba(16,185,129,.07); border:1px solid rgba(16,185,129,.2);
+    border-radius:.75rem; padding:.95rem 1.2rem; margin:1.2rem 0;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .preview-lbl { color:#94a3b8; font-size:.85rem; }
+  .preview-amt { font-size:1.55rem; font-weight:800; color:#10b981; }
+
+  .btn-submit {
+    width:100%; padding:.82rem; background:linear-gradient(135deg,#10b981,#059669);
+    color:#fff; border:none; border-radius:.75rem; font-size:.95rem; font-weight:700;
+    cursor:pointer; transition:all .2s; margin-top:1rem;
+  }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(16,185,129,.35); }
+
+  .btn-back { display:inline-flex;align-items:center;gap:.4rem;color:#94a3b8;text-decoration:none;font-size:.875rem;margin-bottom:1.2rem;transition:color .2s; }
+  .btn-back:hover { color:#e2e8f0; }
+
+  .khalti-note { background:rgba(99,102,241,.08); border:1px solid rgba(99,102,241,.2); border-radius:.55rem; padding:.8rem 1rem; font-size:.82rem; color:#a5b4fc; margin-top:.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="redeem-page">
+
+  <a href="{% url 'rewards:rewards_dashboard' %}" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Back to Rewards
+  </a>
+
+  <div class="redeem-card">
+    <div class="redeem-hdr">
+      <i class="fas fa-hand-holding-usd" style="color:#10b981;font-size:1.25rem;"></i>
+      <h2>Request Redemption</h2>
+    </div>
+
+    <div class="redeem-body">
+
+      <!-- Account Summary -->
+      <div style="margin-bottom:1.5rem;">
+        <div class="info-row">
+          <span class="il">Your Points Balance</span>
+          <span class="iv" style="color:#818cf8;">{{ user.points_balance }} pts</span>
+        </div>
+        <div class="info-row">
+          <span class="il">Minimum Required</span>
+          <span class="iv">{{ min_redeem_pts }} pts</span>
+        </div>
+        <div class="info-row">
+          <span class="il">Conversion Rate</span>
+          <span class="iv">100 pts = Rs. 50</span>
+        </div>
+        <div class="info-row">
+          <span class="il">Max You Can Redeem</span>
+          <span class="iv" style="color:#10b981;">Rs. {{ redeemable_amount|floatformat:0 }}</span>
+        </div>
+      </div>
+
+      <!-- Redeem Form -->
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- Points field -->
+        <div style="margin-bottom:1rem;">
+          <label class="form-label" for="points_requested">Points to Redeem</label>
+          <input
+            type="number"
+            id="points_requested"
+            name="points_requested"
+            class="form-ctrl"
+            min="{{ min_redeem_pts }}"
+            max="{{ user.points_balance }}"
+            value="{{ form.points_requested.value|default:min_redeem_pts }}"
+            required
+            oninput="updatePreview(this.value)"
+          >
+          <span class="form-hint">Between {{ min_redeem_pts }} and {{ user.points_balance }} points.</span>
+          {% if form.points_requested.errors %}
+            <span class="form-hint" style="color:#f87171;">{{ form.points_requested.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Live amount preview -->
+        <div class="preview-box">
+          <span class="preview-lbl">You will receive approx.</span>
+          <span class="preview-amt" id="preview-amount">Rs. {{ min_redeem_amount|floatformat:0 }}</span>
+        </div>
+
+        <!-- Khalti / payout reference field -->
+        <div style="margin-bottom:1rem;">
+          <label class="form-label" for="payout_reference">
+            <i class="fas fa-mobile-alt"></i> Khalti Number <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.85em;">(optional)</span>
+          </label>
+          <input
+            type="text"
+            id="payout_reference"
+            name="payout_reference"
+            class="form-ctrl"
+            maxlength="200"
+            value="{{ form.payout_reference.value|default:'' }}"
+            placeholder="e.g. 98XXXXXXXX (your Khalti/eSewa number)"
+          >
+          <div class="khalti-note" style="margin-top:.5rem;">
+            <i class="fas fa-info-circle"></i>
+            Enter your <strong>Khalti number</strong> so the admin knows where to send your payment.
+            Your request will be reviewed manually and payment sent after approval.
+          </div>
+        </div>
+
+        <p style="font-size:.8rem;color:#64748b;margin-bottom:.5rem;">
+          <i class="fas fa-shield-alt"></i>
+          Points are deducted <strong>only after admin approves</strong> your request.
+          You will be notified once reviewed.
+        </p>
+
+        <button type="submit" class="btn-submit">
+          <i class="fas fa-paper-plane"></i> Submit Redeem Request
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Live NPR preview as user types points
+  function updatePreview(pts) {
+    var p = parseInt(pts) || 0;
+    // Formula: (pts / 100) * 50
+    var amount = Math.floor((p / 100) * 50);
+    document.getElementById('preview-amount').textContent = 'Rs. ' + amount;
+  }
+</script>
+{% endblock %}

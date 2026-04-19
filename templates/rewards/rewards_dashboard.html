@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block title %}My Rewards — FindMe{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Page wrapper ── */
+  .rewards-page { max-width: 920px; margin: 2.5rem auto; padding: 0 1rem; }
+
+  .page-title { font-size: 1.8rem; font-weight: 800; color: #f8fafc; margin-bottom: 0.25rem; }
+  .page-subtitle { color: #94a3b8; font-size: 0.92rem; margin-bottom: 2rem; }
+
+  /* ── Summary cards ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+
+  .scard {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1rem; padding: 1.2rem 1.4rem;
+  }
+  .scard-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em;
+    color: #64748b; font-weight: 600; margin-bottom: 0.4rem;
+  }
+  .scard-value { font-size: 1.9rem; font-weight: 800; color: #f8fafc; line-height: 1.1; }
+  .scard-note  { font-size: 0.78rem; color: #94a3b8; margin-top: 0.3rem; }
+
+  .scard-points  { border-color: rgba(99,102,241,.35); background: rgba(99,102,241,.06); }
+  .scard-points .scard-value { color: #818cf8; }
+
+  .scard-money   { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.05); }
+  .scard-money .scard-value { color: #10b981; }
+
+  .scard-premium { border-color: rgba(234,179,8,.35); background: rgba(234,179,8,.05); }
+
+  /* Badges */
+  .badge-premium { display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:.82rem;font-weight:700;padding:.3rem .85rem;border-radius:9999px; }
+  .badge-normal  { display:inline-flex;align-items:center;gap:.4rem;background:rgba(100,116,139,.2);color:#94a3b8;font-size:.82rem;font-weight:600;padding:.3rem .85rem;border-radius:9999px;border:1px solid rgba(100,116,139,.3); }
+
+  /* ── Panel ── */
+  .panel { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:1rem; overflow:hidden; margin-bottom:1.5rem; }
+  .panel-hdr {
+    background: rgba(99,102,241,.07); border-bottom:1px solid rgba(99,102,241,.15);
+    padding:.85rem 1.25rem; font-size:.92rem; font-weight:600; color:#e2e8f0;
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+  }
+
+  /* Info / alert boxes */
+  .info-box { padding:.9rem 1.1rem; border-radius:.6rem; margin:1.1rem; font-size:.875rem; display:flex; align-items:flex-start; gap:.65rem; }
+  .info-warning { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#fbbf24; }
+  .info-upgrade  { background:rgba(234,179,8,.08); border:1px solid rgba(234,179,8,.3); color:#fde68a; }
+
+  /* Table */
+  .rtable { width:100%; border-collapse:collapse; font-size:.875rem; }
+  .rtable th { padding:.7rem 1.2rem; text-align:left; color:#64748b; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid rgba(255,255,255,.06); }
+  .rtable td { padding:.8rem 1.2rem; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:middle; }
+  .rtable tr:last-child td { border-bottom:none; }
+  .rtable tr:hover td { background:rgba(255,255,255,.02); }
+
+  /* Transaction type badges */
+  .tx-earn   { background:rgba(16,185,129,.15); color:#10b981; border:1px solid rgba(16,185,129,.3); padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+  .tx-redeem { background:rgba(239,68,68,.15);  color:#f87171; border:1px solid rgba(239,68,68,.3);  padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+  .tx-bonus  { background:rgba(99,102,241,.15); color:#818cf8; border:1px solid rgba(99,102,241,.3); padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+
+  /* Status badges */
+  .st-pending  { background:rgba(245,158,11,.15); color:#f59e0b; border:1px solid rgba(245,158,11,.3); padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+  .st-approved { background:rgba(16,185,129,.15); color:#10b981; border:1px solid rgba(16,185,129,.3); padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+  .st-rejected { background:rgba(239,68,68,.15);  color:#f87171; border:1px solid rgba(239,68,68,.3);  padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+  .st-paid     { background:rgba(99,102,241,.15); color:#818cf8; border:1px solid rgba(99,102,241,.3); padding:.18rem .6rem; border-radius:9999px; font-size:.72rem; font-weight:600; }
+
+  /* Buttons */
+  .btn-redeem { display:inline-flex;align-items:center;gap:.5rem;padding:.72rem 1.6rem;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:.75rem;font-size:.92rem;font-weight:600;text-decoration:none;transition:all .2s; }
+  .btn-redeem:hover { transform:translateY(-2px);box-shadow:0 8px 22px rgba(16,185,129,.35);color:#fff; }
+  .btn-outline { display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1.1rem;background:transparent;color:#94a3b8;border:1px solid rgba(255,255,255,.14);border-radius:.55rem;font-size:.85rem;font-weight:500;text-decoration:none;transition:all .2s; }
+  .btn-outline:hover { color:#e2e8f0;border-color:rgba(255,255,255,.28); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rewards-page">
+
+  <h1 class="page-title"><i class="fas fa-star" style="color:#f59e0b;"></i> My Rewards</h1>
+  <p class="page-subtitle">Earn points by participating on FindMe. Premium members can convert points to cash.</p>
+
+  <!-- ── Summary Cards ── -->
+  <div class="summary-grid">
+
+    <div class="scard scard-points">
+      <div class="scard-label"><i class="fas fa-coins"></i> Points Balance</div>
+      <div class="scard-value">{{ user.points_balance }}</div>
+      <div class="scard-note">Points you can use to redeem</div>
+    </div>
+
+    <div class="scard scard-money">
+      <div class="scard-label"><i class="fas fa-money-bill-wave"></i> Redeemable Value</div>
+      <div class="scard-value">Rs. {{ redeemable_amount|floatformat:0 }}</div>
+      <div class="scard-note">Based on: 100 pts = Rs. 50</div>
+    </div>
+
+    <div class="scard scard-premium">
+      <div class="scard-label"><i class="fas fa-crown"></i> Membership</div>
+      <div class="scard-value" style="font-size:1.05rem; margin-top:.45rem;">
+        {% if user.is_premium %}
+          <span class="badge-premium"><i class="fas fa-crown"></i> Premium</span>
+        {% else %}
+          <span class="badge-normal"><i class="fas fa-user"></i> Normal</span>
+        {% endif %}
+      </div>
+      <div class="scard-note">
+        {% if not user.is_premium %}
+          <a href="{% url 'accounts:upgrade_premium' %}" style="color:#f59e0b;">Upgrade to redeem →</a>
+        {% else %}
+          You can redeem points!
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Redeem Action Panel ── -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <span><i class="fas fa-exchange-alt" style="color:#10b981;"></i> Redeem Points</span>
+    </div>
+
+    {% if user.is_premium %}
+      {% if user.points_balance >= min_redeem_pts %}
+        <!-- Enough points → show redeem button -->
+        <div style="padding:1.25rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <div>
+            <p style="color:#cbd5e1;margin:0 0 .2rem;">
+              You have <strong style="color:#818cf8;">{{ user.points_balance }} points</strong> ready to redeem.
+            </p>
+            <p style="color:#64748b;font-size:.82rem;margin:0;">
+              Minimum: {{ min_redeem_pts }} pts &nbsp;·&nbsp; Conversion: 100 pts = Rs. 50
+            </p>
+          </div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-left:auto;">
+            <a href="{% url 'rewards:submit_redeem' %}" class="btn-redeem">
+              <i class="fas fa-hand-holding-usd"></i> Request Redemption
+            </a>
+            <a href="{% url 'rewards:my_redeem_requests' %}" class="btn-outline">
+              <i class="fas fa-list"></i> My Requests
+            </a>
+          </div>
+        </div>
+      {% else %}
+        <!-- Not enough points -->
+        <div class="info-box info-warning">
+          <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:2px;"></i>
+          <div>
+            <strong>Not enough points to redeem.</strong><br>
+            You need at least <strong>{{ min_redeem_pts }}</strong> points to submit a request.
+            You currently have <strong>{{ user.points_balance }}</strong> points.
+            Keep earning by posting found items, getting claims approved, and more!
+          </div>
+        </div>
+        <div style="padding:0 1.1rem 1.1rem;">
+          <a href="{% url 'rewards:my_redeem_requests' %}" class="btn-outline">
+            <i class="fas fa-list"></i> View My Requests
+          </a>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <!-- Normal user → blocked -->
+      <div class="info-box info-upgrade">
+        <i class="fas fa-crown" style="flex-shrink:0;margin-top:2px;"></i>
+        <div>
+          <strong>Only premium users can redeem reward points.</strong><br>
+          You are on a Normal membership. You can still earn and view your points — but to convert them to cash, you need to upgrade to Premium.<br><br>
+          <a href="{% url 'accounts:upgrade_premium' %}" class="btn-redeem" style="display:inline-flex;width:fit-content;">
+            <i class="fas fa-crown"></i> Upgrade to Premium
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Recent Redeem Requests ── -->
+  {% if redeem_requests %}
+  <div class="panel">
+    <div class="panel-hdr">
+      <span><i class="fas fa-exchange-alt" style="color:#818cf8;"></i> Recent Redeem Requests</span>
+      <a href="{% url 'rewards:my_redeem_requests' %}" class="btn-outline" style="font-size:.78rem;padding:.3rem .75rem;">View All</a>
+    </div>
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>Points</th>
+          <th>Amount (Rs.)</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in redeem_requests %}
+        <tr>
+          <td style="font-weight:700;color:#818cf8;">{{ req.points_requested }} pts</td>
+          <td style="color:#10b981;font-weight:600;">Rs. {{ req.amount|floatformat:0 }}</td>
+          <td>
+            {% if req.status == 'pending'  %}<span class="st-pending"><i class="fas fa-clock"></i> Pending</span>
+            {% elif req.status == 'approved' %}<span class="st-approved"><i class="fas fa-check"></i> Approved</span>
+            {% elif req.status == 'rejected' %}<span class="st-rejected"><i class="fas fa-times"></i> Rejected</span>
+            {% elif req.status == 'paid'    %}<span class="st-paid"><i class="fas fa-money-bill-wave"></i> Paid</span>
+            {% endif %}
+          </td>
+          <td style="color:#64748b;font-size:.8rem;">{{ req.requested_at|date:"M d, Y" }}</td>
+          <td style="color:#94a3b8;font-size:.8rem;">
+            {% if req.status == 'paid' %}
+              <span style="color:#10b981;font-weight:600;">Rs. {{ req.amount|floatformat:0 }} redeemed successfully</span>
+              {% if req.paid_at %}<br><span style="color:#64748b;font-size:.75rem;">Paid on {{ req.paid_at|date:"M d, Y" }}</span>{% endif %}
+            {% else %}
+              {{ req.admin_note|default:"—" }}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Points History Table ── -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <span><i class="fas fa-history" style="color:#818cf8;"></i> Points History (Last 20 Transactions)</span>
+    </div>
+
+    {% if history %}
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Points</th>
+          <th>Description</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in history %}
+        <tr>
+          <td>
+            {% if tx.transaction_type == 'earned'   %}<span class="tx-earn">+ Earned</span>
+            {% elif tx.transaction_type == 'redeemed' %}<span class="tx-redeem">− Redeemed</span>
+            {% else %}<span class="tx-bonus">★ Bonus</span>{% endif %}
+          </td>
+          <td style="font-weight:600;{% if tx.transaction_type == 'redeemed' %}color:#f87171;{% else %}color:#10b981;{% endif %}">
+            {% if tx.transaction_type == 'redeemed' %}−{% else %}+{% endif %}{{ tx.points }} pts
+          </td>
+          <td style="color:#94a3b8;">{{ tx.description }}</td>
+          <td style="color:#64748b;font-size:.8rem;">{{ tx.created_at|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="padding:1.5rem;text-align:center;color:#64748b;margin:0;">
+      <i class="fas fa-info-circle"></i> No transactions yet. Start by posting a found item to earn your first points!
+    </p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
