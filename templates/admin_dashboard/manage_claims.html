@@ -1,0 +1,115 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Manage Claims - Admin{% endblock %}
+{% block nav_claims %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-gavel"></i> Manage Claims</h1>
+</div>
+
+<!-- Status Filter Chips -->
+<div class="admin-filter-row">
+    <a href="{% url 'admin_dashboard:manage_claims' %}" class="filter-chip {% if not request.GET.status %}active{% endif %}">
+        All Claims
+    </a>
+    <a href="?status=pending" class="filter-chip {% if request.GET.status == 'pending' %}active{% endif %}">
+        <i class="fas fa-clock" style="font-size:0.7rem;"></i>&nbsp; Pending
+        {% if pending_claims_count > 0 %}({{ pending_claims_count }}){% endif %}
+    </a>
+    <a href="?status=approved" class="filter-chip {% if request.GET.status == 'approved' %}active{% endif %}">
+        <i class="fas fa-check" style="font-size:0.7rem;"></i>&nbsp; Approved
+    </a>
+    <a href="?status=rejected" class="filter-chip {% if request.GET.status == 'rejected' %}active{% endif %}">
+        <i class="fas fa-times" style="font-size:0.7rem;"></i>&nbsp; Rejected
+    </a>
+</div>
+
+<div class="admin-panel">
+    <div class="admin-panel-header">
+        <h3><i class="fas fa-list"></i> Claims List</h3>
+        <span style="color: #64748b; font-size: 0.8rem;">{{ claims|length }} result{{ claims|length|pluralize }}</span>
+    </div>
+    <div class="admin-panel-body" style="padding: 0;">
+        {% if claims %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Item Type</th>
+                    <th>Claimant</th>
+                    <th>Full Name</th>
+                    <th>Contact</th>
+                    <th>Proof</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr>
+                    <td style="white-space: nowrap;">{{ claim.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'items:item_detail' claim.item.pk %}" style="color: #818cf8; text-decoration: none;">
+                            {{ claim.item.title|truncatechars:25 }}
+                        </a>
+                        {% if claim.item.reward_points > 0 %}
+                        <span class="status-badge badge-premium" style="margin-left: 4px;">{{ claim.item.reward_points }} pts</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if claim.item.item_type == 'lost' %}
+                        <span class="status-badge badge-lost">Lost</span>
+                        {% else %}
+                        <span class="status-badge badge-found">Found</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ claim.claimant.username }}</td>
+                    <td>{{ claim.full_name|default:"—" }}</td>
+                    <td>{{ claim.contact_number|default:"—" }}</td>
+                    <td>
+                        {% if claim.proof_image %}
+                        <a href="{{ claim.proof_image.url }}" target="_blank" class="btn-admin-sm btn-admin-view">
+                            <i class="fas fa-image"></i> View
+                        </a>
+                        {% else %}
+                        <span style="color: #475569; font-size: 0.8rem;">No image</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if claim.status == 'approved' %}
+                        <span class="status-badge badge-approved">Approved</span>
+                        {% elif claim.status == 'rejected' %}
+                        <span class="status-badge badge-rejected">Rejected</span>
+                        {% else %}
+                        <span class="status-badge badge-pending">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if claim.status == 'pending' %}
+                        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                            <a href="{% url 'admin_dashboard:approve_claim' claim.pk %}" class="btn-admin-sm btn-admin-approve">
+                                <i class="fas fa-check"></i> Approve
+                            </a>
+                            <a href="{% url 'admin_dashboard:reject_claim' claim.pk %}" class="btn-admin-sm btn-admin-reject">
+                                <i class="fas fa-times"></i> Reject
+                            </a>
+                        </div>
+                        {% else %}
+                        <span style="color: #475569; font-size: 0.8rem;">Done</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 3rem 1rem; color: #475569;">
+            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <p style="margin: 0;">No claims found for the selected filter.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

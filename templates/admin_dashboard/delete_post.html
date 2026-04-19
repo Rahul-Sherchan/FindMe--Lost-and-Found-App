@@ -1,0 +1,55 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Delete Post - Admin{% endblock %}
+{% block nav_posts %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-trash"></i> Delete Post</h1>
+    <a href="{% url 'admin_dashboard:manage_posts' %}" class="btn-admin-sm btn-admin-view">
+        <i class="fas fa-arrow-left"></i> Back to Posts
+    </a>
+</div>
+
+<div class="admin-panel" style="max-width: 560px;">
+    <div class="admin-panel-header">
+        <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Confirm Deletion</h3>
+    </div>
+    <div class="admin-panel-body">
+        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; color: #ef4444; font-size: 0.875rem;">
+            <i class="fas fa-exclamation-circle"></i>
+            This action is <strong>permanent and cannot be undone</strong>. All images and claims related to this post will also be deleted.
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <p style="color:#64748b; font-size:0.75rem; text-transform:uppercase; margin-bottom: 0.4rem;">Post Title</p>
+            <p style="color:#f8fafc; font-weight:600; font-size:1.1rem; margin:0;">{{ item.title }}</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <p style="color:#64748b; font-size:0.75rem; margin-bottom: 0.25rem;">Posted By</p>
+                <p style="color:#cbd5e1; margin:0;">{{ item.user.username }}</p>
+            </div>
+            <div>
+                <p style="color:#64748b; font-size:0.75rem; margin-bottom: 0.25rem;">Type</p>
+                {% if item.item_type == 'lost' %}
+                <span class="status-badge badge-lost">Lost</span>
+                {% else %}
+                <span class="status-badge badge-found">Found</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{% url 'admin_dashboard:manage_posts' %}" class="btn-admin-sm btn-admin-view" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">Cancel</a>
+                <button type="submit" class="btn-admin-sm btn-admin-delete" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">
+                    <i class="fas fa-trash"></i> Yes, Delete Post
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

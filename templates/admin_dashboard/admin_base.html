@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin - FindMe{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /* =========================================
+           ADMIN BASE THEME & LAYOUT
+        ========================================= */
+        :root {
+            --green-primary: #10b981;
+            --green-dark: #059669;
+            --teal: #14b8a6;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --panel-bg: rgba(16, 185, 129, 0.05);
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ---- Top Navbar ---- */
+        .admin-navbar {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-brand {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--green-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-greeting {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .admin-greeting strong {
+            color: var(--green-primary);
+        }
+
+        .pending-alert-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* ---- Layout ---- */
+        .admin-layout {
+            display: flex;
+            gap: 0;
+            min-height: calc(100vh - 57px);
+        }
+
+        /* ---- Sidebar ---- */
+        .admin-sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(16, 185, 129, 0.15);
+            padding: 1.5rem 0.75rem;
+            position: sticky;
+            top: 57px;
+            height: calc(100vh - 57px);
+            overflow-y: auto;
+        }
+
+        .sidebar-section-label {
+            color: var(--green-primary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            padding: 0 0.75rem;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.9rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 0.6rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar-link i {
+            font-size: 1rem;
+            width: 1.2rem;
+            text-align: center;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(16, 185, 129, 0.1);
+            color: #e2e8f0;
+        }
+
+        .sidebar-link:hover i {
+            color: var(--green-primary);
+        }
+
+        .sidebar-link.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #f8fafc;
+            border-left: 3px solid var(--green-primary);
+        }
+
+        .sidebar-link.active i {
+            color: var(--green-primary);
+        }
+
+        .sidebar-link .link-badge {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.45rem;
+            border-radius: 9999px;
+            min-width: 1.3rem;
+            text-align: center;
+        }
+
+        /* ---- Main Content ---- */
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+            min-width: 0;
+            overflow-x: auto;
+        }
+
+        /* ---- Page Header ---- */
+        .admin-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .admin-page-header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--green-primary), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ---- Admin Panel / Card ---- */
+        .admin-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-panel-header {
+            background: rgba(16, 185, 129, 0.08);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-panel-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-panel-body {
+            padding: 1.25rem;
+        }
+
+        /* ---- Tables ---- */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .admin-table thead th {
+            color: #64748b;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .admin-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            transition: background 0.15s ease;
+        }
+
+        .admin-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .admin-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .admin-table td {
+            padding: 0.85rem 1rem;
+            color: #cbd5e1;
+            vertical-align: middle;
+        }
+
+        /* ---- Badges ---- */
+        .badge-pending  { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-approved { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-rejected { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3);  }
+        .badge-active   { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+        .badge-resolved { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-lost     { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3);  }
+        .badge-found    { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-premium  { background: rgba(234,179,8,0.15);  color: #eab308; border: 1px solid rgba(234,179,8,0.3);  }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ---- Buttons ---- */
+        .btn-admin-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-admin-approve { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); }
+        .btn-admin-approve:hover { background: #10b981; color: white; }
+
+        .btn-admin-reject  { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-admin-reject:hover  { background: #ef4444; color: white; }
+
+        .btn-admin-view    { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+        .btn-admin-view:hover    { background: #6366f1; color: white; }
+
+        .btn-admin-delete  { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+        .btn-admin-delete:hover  { background: #ef4444; color: white; }
+
+        /* ---- Filter Row ---- */
+        .admin-filter-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.9rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid var(--glass-border);
+            color: #94a3b8;
+            background: var(--glass-bg);
+            transition: all 0.2s ease;
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--green-primary);
+            color: white;
+            border-color: var(--green-primary);
+        }
+
+        /* ---- Messages ---- */
+        .admin-messages {
+            margin-bottom: 1.25rem;
+        }
+
+        .admin-alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-alert-success { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .admin-alert-error   { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3);  }
+        .admin-alert-warning { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .admin-sidebar { display: none; }
+            .admin-main { padding: 1rem; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navbar -->
+    <header class="admin-navbar">
+        <a href="{% url 'admin_dashboard:dashboard' %}" class="admin-brand">
+            <i class="fas fa-search-location"></i> FindMe Admin
+        </a>
+        <div class="admin-navbar-right">
+            {% if pending_claims_count > 0 %}
+            <a href="{% url 'admin_dashboard:manage_claims' %}?status=pending" class="pending-alert-badge">
+                <i class="fas fa-clock"></i> {{ pending_claims_count }} Pending Claim{{ pending_claims_count|pluralize }}
+            </a>
+            {% endif %}
+            <span class="admin-greeting">Welcome, <strong>{{ request.user.username }}</strong></span>
+            <a href="{% url 'admin_dashboard:admin_profile' %}" style="color: #94a3b8; font-size: 1.3rem; text-decoration: none;"><i class="fas fa-user-shield"></i></a>
+            <a href="{% url 'accounts:logout' %}" style="color: #64748b; font-size: 1.1rem; text-decoration: none;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <p class="sidebar-section-label">Main Menu</p>
+            <nav class="sidebar-nav">
+                <a href="{% url 'admin_dashboard:dashboard' %}" class="sidebar-link {% block nav_dashboard %}{% endblock %}">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="{% url 'admin_dashboard:manage_users' %}" class="sidebar-link {% block nav_users %}{% endblock %}">
+                    <i class="fas fa-users-cog"></i> Users
+                </a>
+                <a href="{% url 'admin_dashboard:manage_posts' %}" class="sidebar-link {% block nav_posts %}{% endblock %}">
+                    <i class="fas fa-stream"></i> Posts
+                </a>
+                <a href="{% url 'admin_dashboard:manage_claims' %}" class="sidebar-link {% block nav_claims %}{% endblock %}">
+                    <i class="fas fa-gavel"></i> Claims
+                    {% if pending_claims_count > 0 %}
+                    <span class="link-badge">{{ pending_claims_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'admin_dashboard:manage_redeem_requests' %}" class="sidebar-link {% block nav_redeem %}{% endblock %}">
+                    <i class="fas fa-hand-holding-usd"></i> Redeem Requests
+                    {% if pending_redeem_count > 0 %}
+                    <span class="link-badge">{{ pending_redeem_count }}</span>
+                    {% endif %}
+                </a>
+            </nav>
+
+            <p class="sidebar-section-label">Tools</p>
+            <nav class="sidebar-nav">
+                <a href="{% url 'admin_dashboard:calendar_analytics' %}" class="sidebar-link {% block nav_calendar %}{% endblock %}">
+                    <i class="fas fa-calendar-alt"></i> Calendar
+                </a>
+                <a href="{% url 'admin_dashboard:manage_announcements' %}" class="sidebar-link {% block nav_announcements %}{% endblock %}">
+                    <i class="fas fa-bullhorn"></i> Announcements
+                </a>
+            </nav>
+
+            <p class="sidebar-section-label">Account</p>
+            <nav class="sidebar-nav">
+                <a href="{% url 'admin_dashboard:admin_profile' %}" class="sidebar-link {% block nav_profile %}{% endblock %}">
+                    <i class="fas fa-user-shield"></i> Admin Profile
+                </a>
+                <a href="{% url 'home' %}" class="sidebar-link" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> View Site
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="sidebar-link" style="color: #ef4444;">
+                    <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Django Messages -->
+            {% if messages %}
+            <div class="admin-messages">
+                {% for message in messages %}
+                <div class="admin-alert admin-alert-{{ message.tags|default:'success' }}">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}check-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

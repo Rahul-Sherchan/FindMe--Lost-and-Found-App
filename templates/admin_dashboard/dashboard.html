@@ -1,0 +1,365 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Admin Dashboard - FindMe{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .grid-admin-top {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .grid-admin-mid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .admin-stat-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        padding: 1.5rem 1.25rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .admin-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--green-primary), var(--teal));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .admin-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.15);
+    }
+
+    .admin-stat-card:hover::before { opacity: 1; }
+
+    .admin-stat-icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        margin-bottom: 0.75rem;
+    }
+
+    .admin-stat-icon { font-size: 1.25rem; color: var(--green-primary); }
+
+    .admin-stat-card p {
+        margin: 0;
+        font-size: 0.78rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 500;
+    }
+
+    .admin-stat-card h3 {
+        margin: 0.4rem 0 0;
+        font-size: 2rem;
+        font-weight: 800;
+        color: #f8fafc;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 230px;
+        width: 100%;
+    }
+
+    .chart-filters {
+        display: flex;
+        gap: 0.4rem;
+    }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        color: #94a3b8;
+        padding: 0.2rem 0.65rem;
+        border-radius: 0.4rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        background: var(--green-primary);
+        color: white;
+        border-color: var(--green-primary);
+    }
+
+    .admin-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .admin-list-item:last-child { border-bottom: none; }
+
+    @media (max-width: 1024px) {
+        .grid-admin-top { grid-template-columns: repeat(2, 1fr); }
+        .grid-admin-mid  { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Heading -->
+<div class="admin-page-header">
+    <h1><i class="fas fa-chart-pie"></i> Activity Overview</h1>
+</div>
+
+<!-- Stat Cards -->
+<div class="grid-admin-top">
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon-wrapper">
+            <i class="fas fa-users admin-stat-icon"></i>
+        </div>
+        <p>Total Users</p>
+        <h3>{{ total_users }}</h3>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon-wrapper">
+            <i class="fas fa-box-open admin-stat-icon"></i>
+        </div>
+        <p>Total Items</p>
+        <h3>{{ total_items }}</h3>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon-wrapper">
+            <i class="fas fa-clipboard-list admin-stat-icon"></i>
+        </div>
+        <p>Pending Claims</p>
+        <h3 style="color: #facc15;">{{ pending_claims }}</h3>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon-wrapper">
+            <i class="fas fa-check-circle admin-stat-icon"></i>
+        </div>
+        <p>Resolved</p>
+        <h3 style="color: var(--green-primary);">{{ resolved_items }}</h3>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid-admin-mid">
+    <div class="admin-panel">
+        <div class="admin-panel-header">
+            <h3><i class="fas fa-chart-bar"></i> Platform Statistics</h3>
+            <div class="chart-filters" id="platformFilters">
+                <button class="filter-btn" data-range="weekly">Weekly</button>
+                <button class="filter-btn" data-range="monthly">Monthly</button>
+                <button class="filter-btn active" data-range="overall">Overall</button>
+            </div>
+        </div>
+        <div class="admin-panel-body">
+            <div class="chart-container">
+                <canvas id="platformStatsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header">
+            <h3><i class="fas fa-chart-pie"></i> Target Breakdown</h3>
+            <div class="chart-filters" id="breakdownFilters">
+                <button class="filter-btn" data-range="weekly">Weekly</button>
+                <button class="filter-btn" data-range="monthly">Monthly</button>
+                <button class="filter-btn active" data-range="overall">Overall</button>
+            </div>
+        </div>
+        <div class="admin-panel-body">
+            <div class="chart-container">
+                <canvas id="itemsBreakdownChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Claims -->
+<div class="admin-panel">
+    <div class="admin-panel-header">
+        <h3><i class="fas fa-history"></i> Recent Claims
+            <span style="display: inline-flex; align-items: center; justify-content: center; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 9999px; margin-left: 0.5rem;">
+                {{ total_claims }} total
+            </span>
+        </h3>
+        <a href="{% url 'admin_dashboard:manage_claims' %}" class="btn-admin-sm btn-admin-view">View All</a>
+    </div>
+
+    <!-- Claims Summary Mini Stats -->
+    <div style="display: flex; gap: 0; border-bottom: 1px solid var(--glass-border);">
+        <div style="flex: 1; padding: 0.75rem 1.25rem; text-align: center; border-right: 1px solid var(--glass-border);">
+            <p style="margin: 0; font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;">Total</p>
+            <p style="margin: 0.2rem 0 0; font-size: 1.4rem; font-weight: 700; color: #f8fafc;">{{ total_claims }}</p>
+        </div>
+        <div style="flex: 1; padding: 0.75rem 1.25rem; text-align: center; border-right: 1px solid var(--glass-border);">
+            <p style="margin: 0; font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;">Pending</p>
+            <p style="margin: 0.2rem 0 0; font-size: 1.4rem; font-weight: 700; color: #f59e0b;">{{ pending_claims }}</p>
+        </div>
+        <div style="flex: 1; padding: 0.75rem 1.25rem; text-align: center; border-right: 1px solid var(--glass-border);">
+            <p style="margin: 0; font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;">Approved</p>
+            <p style="margin: 0.2rem 0 0; font-size: 1.4rem; font-weight: 700; color: #10b981;">{{ approved_claims }}</p>
+        </div>
+        <div style="flex: 1; padding: 0.75rem 1.25rem; text-align: center;">
+            <p style="margin: 0; font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;">Rejected</p>
+            <p style="margin: 0.2rem 0 0; font-size: 1.4rem; font-weight: 700; color: #ef4444;">{{ rejected_claims }}</p>
+        </div>
+    </div>
+
+    <div class="admin-panel-body" style="padding: 0.25rem 1.25rem;">
+        {% for claim in recent_claims %}
+        <div class="admin-list-item">
+            <div>
+                <strong style="color: #f8fafc;">{{ claim.claimant.username }}</strong>
+                <span style="color: #64748b; font-size: 0.82rem; margin: 0 0.4rem;">on</span>
+                <a href="{% url 'items:item_detail' claim.item.pk %}" style="color: #818cf8; font-size: 0.9rem;">
+                    {{ claim.item.title|truncatechars:25 }}
+                </a>
+                <span style="color: #475569; font-size: 0.75rem; margin-left: 0.5rem;">{{ claim.created_at|timesince }} ago</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if claim.status == 'approved' %}
+                <span class="status-badge badge-approved">approved</span>
+                {% elif claim.status == 'rejected' %}
+                <span class="status-badge badge-rejected">rejected</span>
+                {% else %}
+                <span class="status-badge badge-pending">pending</span>
+                <a href="{% url 'admin_dashboard:approve_claim' claim.pk %}" class="btn-admin-sm btn-admin-approve" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">Review</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p style="text-align:center; color:#475569; padding: 1.5rem 0; margin: 0;">No recent claims found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    // Bar Chart - Platform Stats
+    const ctxStats = document.getElementById('platformStatsChart').getContext('2d');
+    let platformChart = new Chart(ctxStats, {
+        type: 'bar',
+        data: {
+            labels: ['Users', 'Items', 'Pending', 'Resolved'],
+            datasets: [{
+                label: 'Platform Totals',
+                data: [
+                    {{ total_users|default:"0" }},
+                    {{ total_items|default:"0" }},
+                    {{ pending_claims|default:"0" }},
+                    {{ resolved_items|default:"0" }}
+                ],
+                backgroundColor: [
+                    'rgba(99,102,241,0.7)',
+                    'rgba(20,184,166,0.7)',
+                    'rgba(245,158,11,0.7)',
+                    'rgba(16,185,129,0.7)'
+                ],
+                borderColor: [
+                    'rgba(99,102,241,1)',
+                    'rgba(20,184,166,1)',
+                    'rgba(245,158,11,1)',
+                    'rgba(16,185,129,1)'
+                ],
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.07)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Doughnut Chart - Breakdown
+    const ctxBreakdown = document.getElementById('itemsBreakdownChart').getContext('2d');
+    let breakdownChart = new Chart(ctxBreakdown, {
+        type: 'doughnut',
+        data: {
+            labels: ['Lost Items', 'Found Items'],
+            datasets: [{
+                data: [{{ lost_items|default:"0" }}, {{ found_items|default:"0" }}],
+                backgroundColor: ['rgba(239,68,68,0.8)', 'rgba(16,185,129,0.8)'],
+                borderColor: 'rgba(17,24,39,1)',
+                borderWidth: 2,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' }
+                }
+            }
+        }
+    });
+
+    // Filter switching (mock data)
+    const mockPlatform = {
+        overall: [{{ total_users|default:"0" }}, {{ total_items|default:"0" }}, {{ pending_claims|default:"0" }}, {{ resolved_items|default:"0" }}],
+        monthly:  [Math.floor({{ total_users|default:"0" }}*0.4), Math.floor({{ total_items|default:"0" }}*0.5), Math.floor({{ pending_claims|default:"0" }}*0.8), Math.floor({{ resolved_items|default:"0" }}*0.3)],
+        weekly:   [Math.floor({{ total_users|default:"0" }}*0.1), Math.floor({{ total_items|default:"0" }}*0.15), Math.floor({{ pending_claims|default:"0" }}*0.4), Math.floor({{ resolved_items|default:"0" }}*0.1)]
+    };
+    const mockBreakdown = {
+        overall: [{{ lost_items|default:"0" }}, {{ found_items|default:"0" }}],
+        monthly: [Math.floor({{ lost_items|default:"0" }}*0.5), Math.floor({{ found_items|default:"0" }}*0.5)],
+        weekly:  [Math.floor({{ lost_items|default:"0" }}*0.15), Math.floor({{ found_items|default:"0" }}*0.15)]
+    };
+
+    document.querySelectorAll('#platformFilters .filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#platformFilters .filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            platformChart.data.datasets[0].data = mockPlatform[this.dataset.range];
+            platformChart.update();
+        });
+    });
+
+    document.querySelectorAll('#breakdownFilters .filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#breakdownFilters .filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            breakdownChart.data.datasets[0].data = mockBreakdown[this.dataset.range];
+            breakdownChart.update();
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Manage Posts - Admin{% endblock %}
+{% block nav_posts %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-stream"></i> Manage Posts</h1>
+</div>
+
+<!-- Filter row -->
+<div class="admin-filter-row">
+    <a href="{% url 'admin_dashboard:manage_posts' %}" class="filter-chip {% if not request.GET.type and not request.GET.status %}active{% endif %}">All</a>
+    <a href="?type=lost" class="filter-chip {% if request.GET.type == 'lost' %}active{% endif %}">
+        <i class="fas fa-search" style="font-size:0.7rem;"></i>&nbsp; Lost
+    </a>
+    <a href="?type=found" class="filter-chip {% if request.GET.type == 'found' %}active{% endif %}">
+        <i class="fas fa-map-marker-alt" style="font-size:0.7rem;"></i>&nbsp; Found
+    </a>
+    <a href="?status=active" class="filter-chip {% if request.GET.status == 'active' %}active{% endif %}">Active</a>
+    <a href="?status=resolved" class="filter-chip {% if request.GET.status == 'resolved' %}active{% endif %}">Resolved</a>
+</div>
+
+<div class="admin-panel">
+    <div class="admin-panel-header">
+        <h3><i class="fas fa-list"></i> All Item Posts</h3>
+        <span style="color: #64748b; font-size: 0.8rem;">{{ items|length }} result{{ items|length|pluralize }}</span>
+    </div>
+    <div class="admin-panel-body" style="padding: 0;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Posted By</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <a href="{% url 'items:item_detail' item.pk %}" style="color: #818cf8; text-decoration: none;" target="_blank">
+                            {{ item.title|truncatechars:30 }}
+                        </a>
+                    </td>
+                    <td style="color: #94a3b8;">{{ item.user.username }}</td>
+                    <td>
+                        {% if item.item_type == 'lost' %}
+                        <span class="status-badge badge-lost">Lost</span>
+                        {% else %}
+                        <span class="status-badge badge-found">Found</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.status == 'active' %}
+                        <span class="status-badge badge-active">Active</span>
+                        {% elif item.status == 'resolved' %}
+                        <span class="status-badge badge-resolved">Resolved</span>
+                        {% else %}
+                        <span class="status-badge badge-pending">{{ item.status|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="color: #64748b; font-size: 0.82rem;">{{ item.location|truncatechars:20 }}</td>
+                    <td style="color: #64748b; white-space: nowrap;">{{ item.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'admin_dashboard:delete_post' item.pk %}" class="btn-admin-sm btn-admin-delete">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" style="text-align:center; padding: 2rem; color: #475569;">No posts found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

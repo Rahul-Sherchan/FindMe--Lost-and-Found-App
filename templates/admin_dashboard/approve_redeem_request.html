@@ -1,0 +1,75 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+{% block title %}Approve Redeem Request — Admin{% endblock %}
+{% block nav_redeem %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <h1><i class="fas fa-check-circle" style="color: #10b981;"></i> Approve Redeem Request</h1>
+  <a href="{% url 'admin_dashboard:manage_redeem_requests' %}" class="btn-admin-sm btn-admin-view">
+    <i class="fas fa-arrow-left"></i> Back to List
+  </a>
+</div>
+
+<div class="admin-panel" style="max-width: 600px;">
+  <div class="admin-panel-header">
+    <h3><i class="fas fa-user"></i> Request from {{ redeem_req.user.username }}</h3>
+  </div>
+  <div class="admin-panel-body">
+
+    <!-- Summary -->
+    <div style="margin-bottom: 1.5rem; display: grid; gap: 0.6rem;">
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: #94a3b8;">User</span>
+        <strong style="color: #f1f5f9;">{{ redeem_req.user.username }} ({{ redeem_req.user.email }})</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: #94a3b8;">Points Requested</span>
+        <strong style="color: #818cf8;">{{ redeem_req.points_requested }} pts</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: #94a3b8;">Amount to Pay</span>
+        <strong style="color: #10b981; font-size: 1.1rem;">Rs. {{ redeem_req.amount|floatformat:0 }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: #94a3b8;">User's Current Balance</span>
+        <strong style="color: #f1f5f9;">{{ redeem_req.user.points_balance }} pts</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+        <span style="color: #94a3b8;">Balance After Approval</span>
+        <strong style="color: #f59e0b;">{{ redeem_req.user.points_balance|add:redeem_req.points_requested|add:"-"|add:"" }} pts</strong>
+      </div>
+    </div>
+
+    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 0.6rem; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.875rem; color: #a7f3d0;">
+      <i class="fas fa-info-circle"></i>
+      Approving this request will <strong>deduct {{ redeem_req.points_requested }} points</strong> from
+      {{ redeem_req.user.username }}'s account and create a transaction record.
+    </div>
+
+    <!-- Approve Form -->
+    <form method="POST">
+      {% csrf_token %}
+      <label style="display: block; color: #94a3b8; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem;">
+        Admin Note (optional)
+      </label>
+      <textarea
+        name="admin_note"
+        rows="3"
+        placeholder="e.g. Payment sent via eSewa to 98XXXXXXXX"
+        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.65rem 0.85rem; color: #f1f5f9; font-size: 0.875rem; resize: vertical; box-sizing: border-box;"
+      ></textarea>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+        <button type="submit" class="btn-admin-sm btn-admin-approve" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;"
+                onclick="return confirm('Are you sure you want to APPROVE and deduct {{ redeem_req.points_requested }} points from {{ redeem_req.user.username }}?')">
+          <i class="fas fa-check"></i> Confirm Approval
+        </button>
+        <a href="{% url 'admin_dashboard:manage_redeem_requests' %}" class="btn-admin-sm btn-admin-view" style="padding: 0.6rem 1.25rem;">
+          Cancel
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

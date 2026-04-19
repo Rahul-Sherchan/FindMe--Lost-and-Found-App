@@ -1,0 +1,65 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+{% block title %}Reject Redeem Request — Admin{% endblock %}
+{% block nav_redeem %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <h1><i class="fas fa-times-circle" style="color: #ef4444;"></i> Reject Redeem Request</h1>
+  <a href="{% url 'admin_dashboard:manage_redeem_requests' %}" class="btn-admin-sm btn-admin-view">
+    <i class="fas fa-arrow-left"></i> Back to List
+  </a>
+</div>
+
+<div class="admin-panel" style="max-width: 600px;">
+  <div class="admin-panel-header">
+    <h3><i class="fas fa-user"></i> Request from {{ redeem_req.user.username }}</h3>
+  </div>
+  <div class="admin-panel-body">
+
+    <!-- Summary -->
+    <div style="margin-bottom: 1.25rem; display: grid; gap: 0.6rem;">
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: #94a3b8;">User</span>
+        <strong style="color: #f1f5f9;">{{ redeem_req.user.username }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: #94a3b8;">Points Requested</span>
+        <strong style="color: #818cf8;">{{ redeem_req.points_requested }} pts</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+        <span style="color: #94a3b8;">Amount</span>
+        <strong style="color: #10b981;">Rs. {{ redeem_req.amount|floatformat:0 }}</strong>
+      </div>
+    </div>
+
+    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 0.6rem; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.875rem; color: #fca5a5;">
+      <i class="fas fa-info-circle"></i>
+      Rejecting this request will <strong>NOT deduct any points</strong> from the user. The user will keep their points balance.
+    </div>
+
+    <!-- Reject Form -->
+    <form method="POST">
+      {% csrf_token %}
+      <label style="display: block; color: #94a3b8; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem;">
+        Reason for Rejection (recommended)
+      </label>
+      <textarea
+        name="admin_note"
+        rows="3"
+        placeholder="e.g. Insufficient account details provided. Please update your contact info."
+        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.65rem 0.85rem; color: #f1f5f9; font-size: 0.875rem; resize: vertical; box-sizing: border-box;"
+      ></textarea>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+        <button type="submit" class="btn-admin-sm btn-admin-reject" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">
+          <i class="fas fa-times"></i> Confirm Rejection
+        </button>
+        <a href="{% url 'admin_dashboard:manage_redeem_requests' %}" class="btn-admin-sm btn-admin-view" style="padding: 0.6rem 1.25rem;">
+          Cancel
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

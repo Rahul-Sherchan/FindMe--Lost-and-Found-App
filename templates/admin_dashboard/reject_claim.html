@@ -1,0 +1,66 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Reject Claim - Admin{% endblock %}
+{% block nav_claims %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-times-circle"></i> Reject Claim</h1>
+    <a href="{% url 'admin_dashboard:manage_claims' %}" class="btn-admin-sm btn-admin-view">
+        <i class="fas fa-arrow-left"></i> Back to Claims
+    </a>
+</div>
+
+<div class="admin-panel" style="max-width: 650px;">
+    <div class="admin-panel-header">
+        <h3><i class="fas fa-clipboard-list"></i> Claim Summary</h3>
+        <span class="status-badge badge-pending">Pending</span>
+    </div>
+    <div class="admin-panel-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <p style="color:#64748b; font-size:0.75rem; text-transform:uppercase; margin-bottom: 0.25rem;">Claimant</p>
+                <p style="color:#f8fafc; font-weight:600; margin:0;">{{ claim.claimant.username }}</p>
+            </div>
+            <div>
+                <p style="color:#64748b; font-size:0.75rem; text-transform:uppercase; margin-bottom: 0.25rem;">Item</p>
+                <a href="{% url 'items:item_detail' claim.item.pk %}" style="color:#818cf8;" target="_blank">{{ claim.item.title }}</a>
+            </div>
+            <div>
+                <p style="color:#64748b; font-size:0.75rem; text-transform:uppercase; margin-bottom: 0.25rem;">Contact</p>
+                <p style="color:#cbd5e1; margin:0;">{{ claim.contact_number|default:"Not provided" }}</p>
+            </div>
+            <div>
+                <p style="color:#64748b; font-size:0.75rem; text-transform:uppercase; margin-bottom: 0.25rem;">Submitted</p>
+                <p style="color:#64748b; margin:0;">{{ claim.created_at|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+            <p style="color:#64748b; font-size:0.75rem; margin-bottom:0.5rem;">CLAIMANT MESSAGE</p>
+            <p style="color:#cbd5e1; margin:0;">{{ claim.message }}</p>
+        </div>
+
+        <!-- Warning box -->
+        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #ef4444;">
+            <i class="fas fa-exclamation-triangle"></i>
+            The claimant will be notified that their claim was rejected. You can optionally provide a reason below.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label style="color:#94a3b8; font-size:0.85rem; display:block; margin-bottom:0.5rem;">Reason for Rejection (Optional)</label>
+                <textarea name="admin_notes" rows="3" style="width:100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 0.5rem; color: #cbd5e1; padding: 0.75rem; font-size: 0.9rem;" placeholder="Provide a brief reason that will be sent to the claimant..."></textarea>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{% url 'admin_dashboard:manage_claims' %}" class="btn-admin-sm btn-admin-view" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">Cancel</a>
+                <button type="submit" class="btn-admin-sm btn-admin-reject" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;"
+                    onclick="return confirm('Reject this claim?')">
+                    <i class="fas fa-times"></i> Confirm Rejection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

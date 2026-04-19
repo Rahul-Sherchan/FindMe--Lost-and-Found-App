@@ -1,0 +1,102 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Manage Users{% endblock %}
+{% block topbar_title %}Manage Users{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="page-header">
+        <div>
+            <h2>User Management</h2>
+            <div class="page-subtitle">View and manage all registered users</div>
+        </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Points</th>
+                    <th>Premium</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div class="avatar-circle" style="width:32px;height:32px;font-size:12px;">
+                                {{ u.username|make_list|first|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight:500;">{{ u.username }}</div>
+                                <div style="font-size:12px;color:var(--muted);">{{ u.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {% if u.user_type == 'admin' %}badge-blue{% elif u.user_type == 'premium' %}badge-green{% else %}badge-muted{% endif %}">
+                            {{ u.get_user_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mono" style="color:var(--amber);">{{ u.points_balance }}</span>
+                    </td>
+                    <td>
+                        {% if u.is_premium %}
+                            <span class="badge badge-green" style="margin-bottom:4px;">Premium</span><br>
+                            <span class="mono" style="font-size:11px;color:var(--muted);">Exp: {{ u.premium_expiry|date:"Y-m-d"|default:"N/A" }}</span>
+                        {% else %}
+                            <span class="badge badge-muted">Normal</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="mono" style="font-size:13px;">{{ u.date_joined|date:"Y-m-d" }}</span>
+                    </td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="badge badge-green">Active</span>
+                        {% else %}
+                            <span class="badge badge-red">Suspended</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_staff or u.is_superuser %}
+                            <span style="color:var(--muted);">—</span>
+                        {% else %}
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <a href="{% url 'admin_dashboard:user_detail' u.pk %}" class="btn btn-ghost btn-sm" title="View Profile"><i class="fa-solid fa-user"></i></a>
+                                <a href="{% url 'messaging:start_admin_conversation' u.pk %}" class="btn btn-ghost btn-sm" title="Message"><i class="fa-solid fa-comment-dots"></i></a>
+                                <form action="{% url 'admin_dashboard:toggle_user_active' u.pk %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to {% if u.is_active %}suspend{% else %}reactivate{% endif %} {{ u.username }}?');">
+                                    {% csrf_token %}
+                                    {% if u.is_active %}
+                                        <button type="submit" class="btn btn-red btn-sm">Suspend</button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-green btn-sm">Reactivate</button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-users"></i>
+                            <div>No users found.</div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
