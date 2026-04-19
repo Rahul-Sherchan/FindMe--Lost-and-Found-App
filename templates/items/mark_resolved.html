@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark as Resolved - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 3rem;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h2 style="color: var(--success);"><i class="fas fa-check-circle"></i> Confirm Item Return</h2>
+        </div>
+        <div class="card-body">
+            <div style="padding: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem;">{{ item.title }}</h4>
+                <p class="text-muted" style="margin: 0;">
+                    Mark this item as returned to confirm the finder has brought it back.
+                </p>
+            </div>
+
+            <!-- Reward Info -->
+            {% if item.reward_points > 0 %}
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+                <p style="margin: 0; font-weight: 600; color: var(--success);">
+                    <i class="fas fa-gift"></i> Reward Available
+                </p>
+                <p class="text-muted" style="margin: 0.5rem 0 0 0;">
+                    You can pay an optional <strong>{{ item.reward_points }} points reward</strong> to the finder via Khalti.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Main Form -->
+            <form method="post" id="resolveForm">
+                {% csrf_token %}
+                <input type="hidden" id="itemId" value="{{ item.pk }}">
+                <input type="hidden" id="itemTitle" value="{{ item.title }}">
+                <input type="hidden" id="rewardAmount" value="{{ item.reward_points }}">
+                <input type="hidden" id="khaltiPublicKey" value="{{ khalti_public_key }}">
+
+                <!-- Confirm Resolution -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                    <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success" style="flex: 1;">
+                        <i class="fas fa-check"></i> Confirm Return
+                    </button>
+                </div>
+
+                <!-- Khalti Payment (Shown after form submission if reward exists) -->
+                {% if item.reward_points > 0 %}
+                <div id="khaltiPaymentSection" style="display: none; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                    <p style="margin-bottom: 1rem; font-weight: 600;">
+                        <i class="fas fa-wallet" style="color: var(--primary);"></i> Pay Reward (Optional)
+                    </p>
+                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
+                        Pay NPR {{ item.reward_points }} as reward to the finder.
+                    </p>
+                    <button type="button" id="khaltiCheckoutBtn" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-credit-card"></i> Pay with Khalti
+                    </button>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.75rem; margin-bottom: 0;">
+                        This step is optional. You can skip it and pay later.
+                    </p>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Khalti Script -->
+<script src="https://khalti.com/static/khalti-checkout-2.js"></script>
+<script>
+    console.log('Mark Resolved Page Loaded - Khalti Setup Starting');
+    
+    document.getElementById('resolveForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('Form submit event triggered');
+        
+        const itemId = document.getElementById('itemId').value;
+        const rewardAmount = parseInt(document.getElementById('rewardAmount').value) || 0;
+        
+        console.log('Item ID:', itemId, 'Reward Amount:', rewardAmount);
+        
+        // Submit form via AJAX
+        fetch('{% url "items:mark_resolved" item.pk %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(response => {
+            console.log('Response received:', response.status);
+            return response.text();
+        })
+        .then(() => {
+            console.log('Item marked as resolved. Reward amount:', rewardAmount);
+            // Show Khalti payment section if reward exists
+            if (rewardAmount > 0) {
+                console.log('Showing Khalti payment section');
+                document.getElementById('khaltiPaymentSection').style.display = 'block';
+            } else {
+                // Show thank you message if no reward
+                console.log('No reward, showing thank you message');
+                document.querySelector('.card-body').innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="color: var(--success); margin-bottom: 0.5rem;">Item Marked as Resolved!</h3>
+                        <p class="text-muted" style="margin-bottom: 1.5rem;">Reward points have been added to the finder.</p>
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error('Form submission error:', err);
+            alert('Error: Could not mark item as resolved - ' + err);
+        });
+    });
+
+    // Khalti Checkout Button Handler
+    const khaltiBtn = document.getElementById('khaltiCheckoutBtn');
+    if (khaltiBtn) {
+        console.log('Khalti checkout button found, setting up listener');
+        khaltiBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Khalti button clicked');
+            
+            const itemId = document.getElementById('itemId').value;
+            const itemTitle = document.getElementById('itemTitle').value;
+            const rewardAmountNPR = parseInt(document.getElementById('rewardAmount').value);
+            const rewardAmount = rewardAmountNPR * 100; // Convert NPR to paisa
+            const publicKey = document.getElementById('khaltiPublicKey').value;
+
+            console.log('Khalti Config:', {
+                itemId: itemId,
+                itemTitle: itemTitle,
+                rewardAmountNPR: rewardAmountNPR,
+                rewardAmountPaisa: rewardAmount,
+                publicKey: publicKey
+            });
+
+            if (!publicKey) {
+                alert('❌ Error: Khalti public key not found. Check .env file.\nPublic Key value: ' + publicKey);
+                console.error('Khalti public key is empty');
+                return;
+            }
+
+            try {
+                const config = {
+                    publicKey: publicKey,
+                    productIdentity: `reward-item-${itemId}`,
+                    productName: `Reward for "${itemTitle}"`,
+                    productUrl: window.location.href,
+                    eventHandler: {
+                        onSuccess(payload) {
+                            console.log('✓ Khalti Payment Success:', payload);
+                            
+                            // Verify payment with backend
+                            fetch('{% url "items:verify_reward" item.pk %}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    token: payload.token,
+                                    amount: rewardAmount,
+                                    item_id: itemId
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                console.log('Verification response:', data);
+                                if (data.success) {
+                                    alert('✓ Payment successful! Reward has been marked as paid.');
+                                    window.location.href = '{% url "items:item_detail" item.pk %}';
+                                } else {
+                                    alert('✗ Payment verification failed: ' + data.message);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Verification error:', err);
+                                alert('Error verifying payment: ' + err);
+                            });
+                        },
+                        onError(error) {
+                            console.error('❌ Khalti Payment Error:', error);
+                            alert('✗ Payment failed: ' + error.message);
+                        },
+                        onClose() {
+                            console.log('⚠ Khalti dialog closed');
+                        }
+                    },
+                    amount: rewardAmount
+                };
+
+                console.log('Creating KhaltiCheckout with config:', config);
+                const checkout = new KhaltiCheckout(config);
+                console.log('Showing Khalti checkout');
+                checkout.show({ amount: rewardAmount });
+            } catch (error) {
+                console.error('Error creating Khalti checkout:', error);
+                alert('Error initializing Khalti checkout: ' + error.message);
+            }
+        });
+    } else {
+        console.warn('Khalti checkout button not found in DOM');
+    }
+</script>
+{% endblock %}

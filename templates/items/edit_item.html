@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Edit Item - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin-top: 2rem;">
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-edit"></i> Edit Item: {{ item.title }}</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" data-validate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Item Type *</label>
+                    {{ form.item_type|add_class:"form-control" }}
+                    {% if form.item_type.errors %}
+                    <small style="color: var(--danger);">{{ form.item_type.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    {{ form.category|add_class:"form-control" }}
+                    {% if form.category.errors %}
+                    <small style="color: var(--danger);">{{ form.category.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Title *</label>
+                    {{ form.title|add_class:"form-control" }}
+                    {% if form.title.errors %}
+                    <small style="color: var(--danger);">{{ form.title.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    {{ form.description|add_class:"form-control" }}
+                    {% if form.description.errors %}
+                    <small style="color: var(--danger);">{{ form.description.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Location *</label>
+                        {{ form.location|add_class:"form-control" }}
+                        {% if form.location.errors %}
+                        <small style="color: var(--danger);">{{ form.location.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nearby Landmark</label>
+                        {{ form.landmark|add_class:"form-control" }}
+                        {% if form.landmark.errors %}
+                        <small style="color: var(--danger);">{{ form.landmark.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Date Lost/Found *</label>
+                        {{ form.date_lost_found|add_class:"form-control" }}
+                        {% if form.date_lost_found.errors %}
+                        <small style="color: var(--danger);">{{ form.date_lost_found.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reward Points</label>
+                        {{ form.reward_points|add_class:"form-control" }}
+                        {% if form.reward_points.errors %}
+                        <small style="color: var(--danger);">{{ form.reward_points.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
+
+                <!-- Current Images -->
+                {% if item.images.all %}
+                <div class="form-group">
+                    <label class="form-label">Current Images</label>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        {% for image in item.images.all %}
+                        <img src="{{ image.image.url }}" alt="{{ image.caption }}"
+                            style="width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem; border: 2px solid var(--glass-border);">
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

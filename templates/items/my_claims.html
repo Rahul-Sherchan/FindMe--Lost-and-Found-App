@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}My Claims - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2><i class="fas fa-hand-holding"></i> My Claims</h2>
+    </div>
+
+    {% if claims %}
+    <div class="grid grid-3">
+        {% for claim in claims %}
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ claim.item.title }}">
+                    {{ claim.item.title }}
+                </h3>
+                <span class="badge {% if claim.status == 'approved' %}badge-success{% elif claim.status == 'rejected' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ claim.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="text-sm text-secondary" style="margin-bottom: 0.5rem;">
+                    <i class="fas fa-calendar"></i> Claimed on: {{ claim.created_at|date:"M d, Y" }}
+                </p>
+                <p class="text-sm">
+                    <strong>Message:</strong> {{ claim.message|truncatechars:50 }}
+                </p>
+                
+                <div style="margin-top: 1rem;">
+                    <a href="{% url 'items:item_detail' claim.item.pk %}" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-eye"></i> View Item
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination" style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline">&laquo; Prev</a>
+        {% endif %}
+
+        <span class="btn btn-primary">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card text-center" style="padding: 3rem 1rem;">
+        <i class="fas fa-box-open text-muted" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+        <h3>No Claims Found</h3>
+        <p class="text-secondary">You haven't submitted any ownership claims for found items yet.</p>
+        <a href="{% url 'items:item_list' %}?item_type=found" class="btn btn-primary mt-3">
+            <i class="fas fa-search"></i> Browse Found Items
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

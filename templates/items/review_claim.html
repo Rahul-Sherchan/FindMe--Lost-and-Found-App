@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Claim - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin-top: 2rem;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2><i class="fas fa-clipboard-check"></i> Review Ownership Claim</h2>
+        <a href="{% url 'items:item_detail' item.pk %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Item
+        </a>
+    </div>
+
+    <!-- Item Context -->
+    <div class="card mb-4" style="background: var(--glass-bg); border-left: 4px solid var(--primary);">
+        <div class="card-body" style="padding: 1rem;">
+            <p class="text-sm text-secondary" style="margin-bottom: 0;">Claim for item:</p>
+            <h3 style="margin-top: 0.25rem; font-size: 1.1rem;">{{ item.title }}</h3>
+        </div>
+    </div>
+
+    <!-- Claimant Info -->
+    <div class="card mb-4">
+        <div class="card-header" style="display: flex; justify-content: space-between;">
+            <h3>Claim Details</h3>
+            <span class="badge badge-warning">Pending Review</span>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-2" style="margin-bottom: 1.5rem;">
+                <div>
+                    <h4 class="text-secondary text-sm">CLAIMANT USERNAME</h4>
+                    <p><strong>{{ claim.claimant.username }}</strong></p>
+                </div>
+                <div>
+                    <h4 class="text-secondary text-sm">SUBMITTED ON</h4>
+                    <p>{{ claim.created_at|date:"F d, Y h:i A" }}</p>
+                </div>
+                <div>
+                    <h4 class="text-secondary text-sm">FULL NAME (PROVIDED)</h4>
+                    <p>{{ claim.full_name|default:"Not provided" }}</p>
+                </div>
+                <div>
+                    <h4 class="text-secondary text-sm">CONTACT NUMBER</h4>
+                    <p>{{ claim.contact_number|default:"Not provided" }}</p>
+                </div>
+            </div>
+            
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 1.5rem 0;">
+            
+            <div style="margin-bottom: 1.5rem;">
+                <h4 class="text-secondary text-sm"><i class="fas fa-comment-alt"></i> MESSAGE / REASON</h4>
+                <div class="alert alert-info" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: #cbd5e1;">
+                    {{ claim.message|linebreaks }}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <h4 class="text-secondary text-sm"><i class="fas fa-file-alt"></i> PROOF DETAILS</h4>
+                <div class="alert alert-secondary" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1;">
+                    {% if claim.proof_details %}
+                        {{ claim.proof_details|linebreaks }}
+                    {% else %}
+                        <em>No textual proof details provided.</em>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if claim.proof_image %}
+            <div style="margin-bottom: 1.5rem;">
+                <h4 class="text-secondary text-sm"><i class="fas fa-image"></i> PROOF IMAGE</h4>
+                <img src="{{ claim.proof_image.url }}" alt="Proof Image" style="max-width: 100%; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem; max-height: 400px; object-fit: contain;">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Make a Decision</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-secondary mb-3">Review the information provided above. If you are satisfied this person owns the item, you can approve the claim. <strong>Approving this claim will automatically resolve the item and reject any other pending claims.</strong></p>
+            
+            <form method="post" action="{% url 'items:review_claim' claim.pk %}">
+                {% csrf_token %}
+                
+                <div class="form-group mb-3">
+                    <label class="form-label" for="admin_notes">Notes (Optional)</label>
+                    <textarea name="admin_notes" id="admin_notes" class="form-control" rows="2" placeholder="Add a note to be saved with this decision (only visible to you and admins)"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" name="action" value="approve" class="btn btn-success" style="flex: 1; padding: 0.75rem;" onclick="return confirm('Are you sure you want to APPROVE this claim? The item will be marked as resolved.')">
+                        <i class="fas fa-check-circle"></i> Approve Claim
+                    </button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger" style="flex: 1; padding: 0.75rem;" onclick="return confirm('Are you sure you want to REJECT this claim?')">
+                        <i class="fas fa-times-circle"></i> Reject Claim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
