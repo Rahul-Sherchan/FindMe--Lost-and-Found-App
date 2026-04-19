@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}My Profile — FindMe{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Page ── */
+  .profile-page { max-width: 1040px; margin: 2rem auto; padding: 0 1.25rem; }
+
+  /* ── Hero card ── */
+  .hero-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 1.25rem; overflow: hidden; margin-bottom: 1.5rem;
+  }
+
+  .hero-banner {
+    height: 110px;
+    background: linear-gradient(135deg, rgba(99,102,241,.35) 0%, rgba(139,92,246,.25) 50%, rgba(16,185,129,.15) 100%);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    position: relative;
+  }
+
+  .hero-body { padding: 0 1.75rem 1.5rem; position: relative; }
+
+  /* Avatar */
+  .avatar-wrap {
+    position: absolute; top: -55px; left: 1.75rem;
+  }
+  .avatar-wrap img, .avatar-wrap .avatar-fallback {
+    width: 110px; height: 110px; border-radius: 50%; object-fit: cover;
+    border: 4px solid #0f172a; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  .avatar-wrap .avatar-fallback {
+    background: linear-gradient(135deg, rgba(99,102,241,.3), rgba(139,92,246,.2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: #818cf8;
+  }
+
+  /* Crown badge on avatar */
+  .crown-badge {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 30px; height: 30px; background: linear-gradient(135deg,#f59e0b,#d97706);
+    border-radius: 50%; border: 3px solid #0f172a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; color: #fff;
+  }
+
+  /* Info area */
+  .hero-info { padding-top: 70px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+  .username-row { display: flex; align-items: center; gap: .75rem; }
+  .username { font-size: 1.5rem; font-weight: 800; color: #f8fafc; margin: 0; }
+  .premium-pill { display: inline-flex; align-items: center; gap: .35rem; background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; font-size: .72rem; font-weight: 700; padding: .25rem .7rem; border-radius: 9999px; }
+  .normal-pill  { display: inline-flex; align-items: center; gap: .35rem; background: rgba(100,116,139,.2); color: #94a3b8; border: 1px solid rgba(100,116,139,.3); font-size: .72rem; font-weight: 600; padding: .25rem .7rem; border-radius: 9999px; }
+
+  /* Contact info */
+  .contact-row { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .5rem; }
+  .contact-item { display: flex; align-items: center; gap: .35rem; font-size: .82rem; color: #64748b; }
+
+  /* Action buttons */
+  .hero-actions { display: flex; gap: .65rem; flex-wrap: wrap; }
+  .btn-edit-profile {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.2rem; background: rgba(99,102,241,.15); color: #818cf8;
+    border: 1px solid rgba(99,102,241,.35); border-radius: .55rem;
+    font-size: .85rem; font-weight: 600; text-decoration: none; transition: all .2s;
+  }
+  .btn-edit-profile:hover { background: rgba(99,102,241,.25); color: #a5b4fc; }
+
+  .btn-go-premium {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.2rem; background: linear-gradient(135deg,#f59e0b,#d97706);
+    color: #fff; border: none; border-radius: .55rem;
+    font-size: .85rem; font-weight: 600; text-decoration: none; transition: all .2s;
+  }
+  .btn-go-premium:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,158,11,.35); color: #fff; }
+
+  .btn-cancel-sub {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.2rem; background: rgba(239,68,68,.1);
+    color: #f87171; border: 1px solid rgba(239,68,68,.3);
+    border-radius: .55rem; font-size: .85rem; font-weight: 600;
+    cursor: pointer; transition: all .2s; background-color: transparent;
+  }
+  .btn-cancel-sub:hover { background: rgba(239,68,68,.18); color: #fca5a5; }
+
+  /* ── Stats row ── */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-top: 1.25rem; }
+  .stat-box {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+    border-radius: .85rem; padding: .9rem 1rem; text-align: center;
+    transition: border-color .2s;
+  }
+  .stat-box:hover { border-color: rgba(99,102,241,.3); }
+  .stat-val { font-size: 1.65rem; font-weight: 800; color: #f1f5f9; line-height: 1.1; }
+  .stat-lbl { font-size: .72rem; color: #64748b; margin-top: .2rem; font-weight: 500; }
+
+  /* ── Two-column layout ── */
+  .profile-grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.25rem; }
+  @media (max-width: 720px) { .profile-grid { grid-template-columns: 1fr; } }
+
+  /* ── Panels ── */
+  .panel {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 1rem; overflow: hidden;
+  }
+  .panel-hdr {
+    background: rgba(99,102,241,.07); border-bottom: 1px solid rgba(99,102,241,.13);
+    padding: .85rem 1.25rem; font-size: .9rem; font-weight: 600; color: #e2e8f0;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .panel-body { padding: 1.1rem 1.25rem; }
+
+  /* Quick action links */
+  .action-link {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .75rem .9rem; border-radius: .6rem;
+    text-decoration: none; color: #cbd5e1; font-size: .875rem; font-weight: 500;
+    transition: background .2s, color .2s; margin-bottom: .4rem;
+    border: 1px solid transparent;
+  }
+  .action-link:last-child { margin-bottom: 0; }
+  .action-link .action-icon {
+    width: 34px; height: 34px; border-radius: .5rem;
+    display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0;
+  }
+  .action-link:hover { background: rgba(255,255,255,.05); color: #f1f5f9; border-color: rgba(255,255,255,.08); }
+
+  .al-post   .action-icon { background: rgba(99,102,241,.18); color: #818cf8; }
+  .al-manage .action-icon { background: rgba(16,185,129,.12); color: #10b981; }
+  .al-reward .action-icon { background: rgba(234,179,8,.12);  color: #fbbf24; }
+  .al-claims .action-icon { background: rgba(139,92,246,.12); color: #a78bfa; }
+
+  /* Transaction list */
+  .tx-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .65rem 0; border-bottom: 1px solid rgba(255,255,255,.05);
+    font-size: .85rem;
+  }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-desc { color: #94a3b8; flex: 1; min-width: 0; padding-right: .5rem; }
+  .tx-date { font-size: .75rem; color: #475569; }
+  .tx-pts-earn   { background: rgba(16,185,129,.15);  color: #10b981; border: 1px solid rgba(16,185,129,.3);  padding: .18rem .6rem; border-radius: 9999px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+  .tx-pts-redeem { background: rgba(239,68,68,.15);   color: #f87171; border: 1px solid rgba(239,68,68,.3);   padding: .18rem .6rem; border-radius: 9999px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+
+  <!-- ── Hero Card ── -->
+  <div class="hero-card">
+    <div class="hero-banner"></div>
+
+    <div class="hero-body">
+      <!-- Avatar -->
+      <div class="avatar-wrap">
+        {% if user.profile_picture %}
+          <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+        {% else %}
+          <div class="avatar-fallback"><i class="fas fa-user"></i></div>
+        {% endif %}
+        {% if user.is_premium %}
+          <div class="crown-badge"><i class="fas fa-crown"></i></div>
+        {% endif %}
+      </div>
+
+      <!-- Info + Actions -->
+      <div class="hero-info">
+        <div>
+          <div class="username-row">
+            <h1 class="username">{{ user.username }}</h1>
+            {% if user.is_premium %}
+              <span class="premium-pill"><i class="fas fa-crown"></i> Premium</span>
+            {% else %}
+              <span class="normal-pill"><i class="fas fa-user"></i> Normal</span>
+            {% endif %}
+          </div>
+          <div class="contact-row">
+            <span class="contact-item"><i class="fas fa-envelope"></i> {{ user.email }}</span>
+            {% if user.phone_number %}
+              <span class="contact-item"><i class="fas fa-phone"></i> {{ user.phone_number }}</span>
+            {% endif %}
+            {% if user.address %}
+              <span class="contact-item"><i class="fas fa-map-marker-alt"></i> {{ user.address }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a href="{% url 'accounts:edit_profile' %}" class="btn-edit-profile">
+            <i class="fas fa-edit"></i> Edit Profile
+          </a>
+          {% if not user.is_premium %}
+            <a href="{% url 'accounts:upgrade_premium' %}" class="btn-go-premium">
+              <i class="fas fa-crown"></i> Go Premium
+            </a>
+          {% else %}
+            <form method="POST" action="{% url 'accounts:cancel_subscription' %}"
+                  onsubmit="return confirm('Are you sure you want to cancel your premium subscription?');" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="btn-cancel-sub">
+                <i class="fas fa-times-circle"></i> Cancel Subscription
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" style="color:#818cf8;">{{ user.points_balance }}</div>
+          <div class="stat-lbl"><i class="fas fa-coins"></i> Reward Points</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color:#10b981;">{{ items_found|default:"0" }}</div>
+          <div class="stat-lbl"><i class="fas fa-check-circle"></i> Items Found</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color:#f59e0b;">{{ items_posted|default:"0" }}</div>
+          <div class="stat-lbl"><i class="fas fa-list"></i> Items Posted</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Two-column section ── -->
+  <div class="profile-grid">
+
+    <!-- Left: Quick Actions -->
+    <div class="panel">
+      <div class="panel-hdr"><i class="fas fa-bolt" style="color:#818cf8;"></i> Quick Actions</div>
+      <div class="panel-body">
+        <a href="{% url 'items:post_item' %}" class="action-link al-post">
+          <div class="action-icon"><i class="fas fa-plus"></i></div>
+          Post Lost / Found Item
+        </a>
+        <a href="{% url 'items:my_items' %}" class="action-link al-manage">
+          <div class="action-icon"><i class="fas fa-list"></i></div>
+          Manage My Items
+        </a>
+        <a href="{% url 'rewards:rewards_dashboard' %}" class="action-link al-reward">
+          <div class="action-icon"><i class="fas fa-star"></i></div>
+          My Rewards
+        </a>
+        <a href="{% url 'items:my_claims' %}" class="action-link al-claims">
+          <div class="action-icon"><i class="fas fa-hand-holding"></i></div>
+          My Claims
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: Recent Transactions -->
+    <div class="panel">
+      <div class="panel-hdr" style="justify-content:space-between;">
+        <span><i class="fas fa-history" style="color:#818cf8;"></i> Recent Transactions</span>
+        <a href="{% url 'accounts:points_history' %}" style="font-size:.78rem;color:#6366f1;text-decoration:none;">View All →</a>
+      </div>
+      <div class="panel-body">
+        {% if transactions %}
+          {% for tx in transactions %}
+          <div class="tx-item">
+            <div>
+              <div class="tx-desc">{{ tx.description|default:"Point transaction" }}</div>
+              <div class="tx-date">{{ tx.created_at|date:"M d, Y" }}</div>
+            </div>
+            {% if tx.transaction_type == 'earned' %}
+              <span class="tx-pts-earn">+{{ tx.points }} pts</span>
+            {% else %}
+              <span class="tx-pts-redeem">−{{ tx.points }} pts</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="text-align:center;color:#64748b;padding:1rem 0;font-size:.875rem;">
+            <i class="fas fa-info-circle"></i> No transactions yet.<br>
+            <a href="{% url 'items:post_item' %}" style="color:#6366f1;">Post a found item</a> to start earning!
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

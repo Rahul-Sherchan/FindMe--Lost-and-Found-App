@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Edit Profile - FindMe{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 3rem;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" data-validate>
+                {% csrf_token %}
+
+                <!-- Profile Picture Preview -->
+                <div class="text-center mb-3">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture"
+                        style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--glass-border); margin-bottom: 1rem;">
+                    {% else %}
+                    <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--glass-bg); display: flex; align-items: center; justify-content: center; font-size: 3rem; border: 3px solid var(--glass-border); margin: 0 auto 1rem auto;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        {{ form.first_name|add_class:"form-control" }}
+                        {% if form.first_name.errors %}
+                        <small style="color: var(--danger);">{{ form.first_name.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        {{ form.last_name|add_class:"form-control" }}
+                        {% if form.last_name.errors %}
+                        <small style="color: var(--danger);">{{ form.last_name.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    {{ form.email|add_class:"form-control" }}
+                    {% if form.email.errors %}
+                    <small style="color: var(--danger);">{{ form.email.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    {{ form.phone_number|add_class:"form-control" }}
+                    {% if form.phone_number.errors %}
+                    <small style="color: var(--danger);">{{ form.phone_number.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    {{ form.address|add_class:"form-control" }}
+                    {% if form.address.errors %}
+                    <small style="color: var(--danger);">{{ form.address.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Profile Picture</label>
+                    {{ form.profile_picture|add_class:"form-control" }}
+                    {% if form.profile_picture.errors %}
+                    <small style="color: var(--danger);">{{ form.profile_picture.errors.0 }}</small>
+                    {% endif %}
+                    <small class="text-muted">Upload a new image to change your profile picture.</small>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
