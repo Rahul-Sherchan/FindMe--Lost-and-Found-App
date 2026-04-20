@@ -52,14 +52,23 @@
                     <td style="color: #64748b; white-space: nowrap;">{{ u.date_joined|date:"M d, Y" }}</td>
                     <td>
                         {% if not u.is_superuser %}
-                        <form method="post" action="{% url 'admin_dashboard:toggle_user_active' u.pk %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-admin-sm {% if u.is_active %}btn-admin-reject{% else %}btn-admin-approve{% endif %}"
-                                onclick="return confirm('Are you sure you want to {% if u.is_active %}suspend{% else %}reactivate{% endif %} {{ u.username }}?')">
-                                <i class="fas fa-{% if u.is_active %}ban{% else %}check{% endif %}"></i>
-                                {% if u.is_active %}Suspend{% else %}Reactivate{% endif %}
-                            </button>
-                        </form>
+                        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                            <a href="{% url 'admin_dashboard:edit_user' u.pk %}" class="btn-admin-sm" style="background: rgba(99,102,241,.15); color: #818cf8; border: 1px solid rgba(99,102,241,.3); border-radius: 0.4rem; padding: 0.3rem 0.75rem; font-size: 0.8rem; text-decoration: none;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form method="post" action="{% url 'admin_dashboard:toggle_user_active' u.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-admin-sm {% if u.is_active %}btn-admin-reject{% else %}btn-admin-approve{% endif %}"
+                                    onclick="return confirm('Are you sure you want to {% if u.is_active %}suspend{% else %}reactivate{% endif %} {{ u.username }}?')">
+                                    <i class="fas fa-{% if u.is_active %}ban{% else %}check{% endif %}"></i>
+                                    {% if u.is_active %}Suspend{% else %}Reactivate{% endif %}
+                                </button>
+                            </form>
+                            <a href="{% url 'admin_dashboard:delete_user' u.pk %}" class="btn-admin-sm btn-admin-reject" style="border-radius: 0.4rem; padding: 0.3rem 0.75rem; font-size: 0.8rem; text-decoration: none;"
+                                onclick="return confirm('Delete {{ u.username }}? This cannot be undone.')">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
                         {% else %}
                         <span style="color: #475569; font-size: 0.8rem;">—</span>
                         {% endif %}

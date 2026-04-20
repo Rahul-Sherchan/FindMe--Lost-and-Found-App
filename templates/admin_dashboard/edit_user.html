@@ -1,0 +1,73 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Edit User — Admin{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-user-edit"></i> Edit User: {{ user_obj.username }}</h1>
+</div>
+
+<div class="admin-panel" style="max-width: 600px;">
+    <div class="admin-panel-header">
+        <h3><i class="fas fa-id-card"></i> User Information</h3>
+    </div>
+    <div class="admin-panel-body">
+
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="margin-bottom: 1rem;">
+            <i class="fas fa-exclamation-circle"></i> {{ message }}
+        </div>
+        {% endfor %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Username *</label>
+                    <input type="text" name="username" value="{{ user_obj.username }}" required
+                        style="width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 0.5rem; padding: 0.6rem 0.9rem; color: #f1f5f9; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Email *</label>
+                    <input type="email" name="email" value="{{ user_obj.email }}" required
+                        style="width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 0.5rem; padding: 0.6rem 0.9rem; color: #f1f5f9; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">First Name</label>
+                    <input type="text" name="first_name" value="{{ user_obj.first_name }}"
+                        style="width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 0.5rem; padding: 0.6rem 0.9rem; color: #f1f5f9; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user_obj.last_name }}"
+                        style="width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 0.5rem; padding: 0.6rem 0.9rem; color: #f1f5f9; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Account Type</label>
+                <select name="user_type"
+                    style="width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 0.5rem; padding: 0.6rem 0.9rem; color: #f1f5f9; font-size: 0.9rem; box-sizing: border-box;">
+                    <option value="normal" {% if user_obj.user_type == 'normal' %}selected{% endif %}>Normal User</option>
+                    <option value="premium" {% if user_obj.user_type == 'premium' or user_obj.is_premium %}selected{% endif %}>Premium User</option>
+                    <option value="admin" {% if user_obj.user_type == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-admin-sm btn-admin-approve" style="padding: 0.65rem 1.5rem; font-size: 0.9rem; border-radius: 0.5rem;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'admin_dashboard:manage_users' %}" class="btn-admin-sm" style="padding: 0.65rem 1.25rem; font-size: 0.9rem; border-radius: 0.5rem; background: rgba(255,255,255,.06); color: #94a3b8; border: 1px solid rgba(255,255,255,.1); text-decoration: none;">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

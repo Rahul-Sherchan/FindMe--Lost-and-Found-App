@@ -303,6 +303,73 @@ def user_detail(request, pk):
 
 @login_required
 @user_passes_test(is_admin)
+def edit_user(request, pk):
+    """Admin: Edit a user's basic profile information."""
+    user_obj = get_object_or_404(User, pk=pk)
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        user_type = request.POST.get('user_type', user_obj.user_type)
+
+        # Basic validation
+        if not username or not email:
+            messages.error(request, 'Username and email are required.')
+        elif User.objects.exclude(pk=pk).filter(username=username).exists():
+            messages.error(request, f'Username "{username}" is already taken.')
+        elif User.objects.exclude(pk=pk).filter(email=email).exists():
+            messages.error(request, f'Email "{email}" is already in use.')
+        else:
+            user_obj.username = username
+            user_obj.email = email
+            user_obj.first_name = first_name
+            user_obj.last_name = last_name
+            if user_type in ['normal', 'premium', 'admin']:
+                user_obj.user_type = user_type
+                user_obj.is_premium = (user_type == 'premium')
+            user_obj.save()
+            messages.success(request, f'User "{username}" updated successfully.')
+            return redirect('admin_dashboard:manage_users')
+
+    context = {
+        'user_obj': user_obj,
+        'pending_claims_count': get_pending_claims_count(),
+    }
+    return render(request, 'admin_dashboard/edit_user.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def delete_user(request, pk):
+    """Admin: Delete a user account (with confirmation step)."""
+    user_obj = get_object_or_404(User, pk=pk)
+
+    # Prevent deleting superusers / own account
+    if user_obj.is_superuser:
+        messages.error(request, 'Superuser accounts cannot be deleted from here.')
+        return redirect('admin_dashboard:manage_users')
+
+    if user_obj == request.user:
+        messages.error(request, 'You cannot delete your own account.')
+        return redirect('admin_dashboard:manage_users')
+
+    if request.method == 'POST':
+        username = user_obj.username
+        user_obj.delete()
+        messages.success(request, f'User "{username}" has been deleted.')
+        return redirect('admin_dashboard:manage_users')
+
+    context = {
+        'user_obj': user_obj,
+        'pending_claims_count': get_pending_claims_count(),
+    }
+    return render(request, 'admin_dashboard/delete_user.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
 def calendar_analytics(request):
     """Display calendar analytics view with empty calendar script"""
     try:

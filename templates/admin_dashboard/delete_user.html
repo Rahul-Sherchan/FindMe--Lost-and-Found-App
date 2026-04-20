@@ -1,0 +1,46 @@
+{% extends 'admin_dashboard/admin_base.html' %}
+
+{% block title %}Delete User — Admin{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-user-times"></i> Delete User</h1>
+</div>
+
+<div class="admin-panel" style="max-width: 520px;">
+    <div class="admin-panel-header" style="background: rgba(239,68,68,.1); border-bottom: 1px solid rgba(239,68,68,.25);">
+        <h3 style="color: #f87171;"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3>
+    </div>
+    <div class="admin-panel-body" style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3.5rem; color: #f87171; margin-bottom: 1rem;">
+            <i class="fas fa-user-slash"></i>
+        </div>
+        <h3 style="color: #f8fafc; margin-bottom: 0.5rem;">{{ user_obj.username }}</h3>
+        <p style="color: #94a3b8; margin-bottom: 0.25rem;">{{ user_obj.email }}</p>
+        <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">
+            Member since {{ user_obj.date_joined|date:"M d, Y" }}
+            &nbsp;·&nbsp;
+            {% if user_obj.is_premium %}<span style="color: #fbbf24;">Premium</span>{% else %}Normal{% endif %}
+        </p>
+
+        <div style="background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); border-radius: 0.65rem; padding: 1rem; margin-bottom: 1.5rem; color: #fca5a5; font-size: 0.875rem; text-align: left;">
+            <i class="fas fa-exclamation-circle"></i>
+            <strong>This action is permanent.</strong> All items, claims, messages, and transactions
+            associated with this account will also be removed from the database.
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-admin-sm btn-admin-reject" style="padding: 0.7rem 1.75rem; font-size: 0.9rem; border-radius: 0.5rem;">
+                    <i class="fas fa-trash"></i> Yes, Delete User
+                </button>
+            </form>
+            <a href="{% url 'admin_dashboard:manage_users' %}" class="btn-admin-sm" style="padding: 0.7rem 1.5rem; font-size: 0.9rem; border-radius: 0.5rem; background: rgba(255,255,255,.06); color: #94a3b8; border: 1px solid rgba(255,255,255,.1); text-decoration: none;">
+                <i class="fas fa-arrow-left"></i> Cancel
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
