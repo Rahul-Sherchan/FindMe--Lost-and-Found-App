@@ -18,315 +18,138 @@
 
     <!-- Custom CSS -->
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.0">
 
     <!-- =====================================================
          DESKTOP NAVBAR STYLING — inline for priority
          ===================================================== -->
     <style>
+        /* Inline overrides — keep navbar crisp */
         .navbar {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-            padding: 1rem 2rem;
+            background: #111827;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 0.75rem 2rem;
             position: sticky;
             top: 0;
             z-index: 1000;
         }
-
         .navbar-wrapper {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
             align-items: center !important;
-            gap: 2rem;
-            max-width: 1600px;
+            gap: 1.5rem;
+            max-width: 1500px;
             margin: 0 auto;
             width: 100%;
         }
-
-        .navbar-left {
-            display: flex !important;
-            align-items: center !important;
-            gap: 2.5rem;
-            flex: 0 0 auto !important;
-        }
-
-        .navbar-center {
-            flex: 1 1 0% !important;
-            min-width: 300px !important;
-        }
-
-        .navbar-right {
-            display: flex !important;
-            align-items: center !important;
-            gap: 1.5rem;
-            flex: 0 0 auto !important;
-        }
-
+        .navbar-left  { display: flex !important; align-items: center !important; gap: 2rem; flex: 0 0 auto !important; }
+        .navbar-center { flex: 1 1 0% !important; min-width: 200px !important; }
+        .navbar-right  { display: flex !important; align-items: center !important; gap: 0.6rem; flex: 0 0 auto !important; }
         .navbar-icons {
             display: flex !important;
             align-items: center !important;
-            gap: 0.75rem !important;
-            padding: 0.75rem 1.25rem !important;
-            background: rgba(99, 102, 241, 0.08) !important;
-            border: 1px solid rgba(99, 102, 241, 0.25) !important;
-            border-radius: 1rem !important;
-            backdrop-filter: blur(10px) !important;
+            gap: 0.25rem !important;
+            padding: 0.4rem 0.6rem !important;
+            background: rgba(255,255,255,0.04) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 0.55rem !important;
         }
-
         .navbar-icon-btn {
-            color: #cbd5e1 !important;
-            font-size: 1.35rem !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            color: #9CA3AF !important;
+            font-size: 1.15rem !important;
             position: relative !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 2.8rem !important;
-            height: 2.8rem !important;
-            border-radius: 0.75rem !important;
+            width: 2.3rem !important;
+            height: 2.3rem !important;
+            border-radius: 0.45rem !important;
             background: transparent !important;
             padding: 0 !important;
             border: none !important;
             cursor: pointer !important;
+            transition: color 0.2s, background 0.2s !important;
         }
-
-        .navbar-icon-btn:hover {
-            color: #818cf8 !important;
-            background: rgba(99, 102, 241, 0.15) !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3) !important;
-        }
-
+        .navbar-icon-btn:hover { color: #22C55E !important; background: rgba(34,197,94,0.09) !important; }
         .icon-badge {
             position: absolute !important;
-            top: -5px !important;
-            right: -5px !important;
-            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            top: -4px !important;
+            right: -4px !important;
+            background: #EF4444 !important;
             color: white !important;
-            font-size: 0.7rem !important;
+            font-size: 0.65rem !important;
             font-weight: 700 !important;
-            padding: 0.35rem 0.5rem !important;
-            border-radius: 50% !important;
-            min-width: 22px !important;
-            height: 22px !important;
+            padding: 0.18rem 0.36rem !important;
+            border-radius: 9999px !important;
+            min-width: 18px !important;
+            height: 18px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            border: 2px solid #0f172a !important;
-            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.5) !important;
-            animation: pulse-badge 2s ease-in-out infinite !important;
+            border: 2px solid #0B0F19 !important;
         }
-
-        @keyframes pulse-badge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-        }
-
         .navbar-profile {
             position: relative !important;
-            padding-left: 1.25rem !important;
-            border-left: 1.5px solid rgba(99, 102, 241, 0.3) !important;
+            padding-left: 0.75rem !important;
+            border-left: 1px solid rgba(255,255,255,0.08) !important;
         }
-
         .profile-trigger {
             background: transparent !important;
             border: none !important;
-            color: #cbd5e1 !important;
-            font-size: 1.8rem !important;
+            color: #9CA3AF !important;
+            font-size: 1.6rem !important;
             cursor: pointer !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            padding: 0.4rem !important;
-            position: relative !important;
+            padding: 0.3rem !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 2.8rem !important;
-            height: 2.8rem !important;
-            border-radius: 0.75rem !important;
+            width: 2.3rem !important;
+            height: 2.3rem !important;
+            border-radius: 0.45rem !important;
+            transition: color 0.2s !important;
         }
-
-        .profile-trigger:hover {
-            color: #818cf8 !important;
-            background: rgba(99, 102, 241, 0.15) !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3) !important;
-        }
-
+        .profile-trigger:hover { color: #22C55E !important; background: rgba(34,197,94,0.09) !important; }
         .premium-indicator {
             position: absolute !important;
             top: -2px !important;
             right: -2px !important;
-            width: 14px !important;
-            height: 14px !important;
-            background: linear-gradient(135deg, #ec4899, #be185d) !important;
+            width: 11px !important;
+            height: 11px !important;
+            background: #22C55E !important;
             border-radius: 50% !important;
-            border: 2px solid #0f172a !important;
-            box-shadow: 0 3px 10px rgba(236, 72, 153, 0.5) !important;
+            border: 2px solid #0B0F19 !important;
         }
-
         .profile-menu {
             position: absolute !important;
-            top: calc(100% + 8px) !important;
+            top: calc(100% + 5px) !important;
             right: 0 !important;
-            background: rgba(30, 41, 82, 0.95) !important;
-            border: 1px solid rgba(99, 102, 241, 0.3) !important;
-            border-radius: 0.875rem !important;
-            padding: 0.75rem !important;
-            min-width: 180px !important;
+            background: #1A2236 !important;
+            border: 1px solid rgba(255,255,255,0.09) !important;
+            border-radius: 0.6rem !important;
+            padding: 0.5rem !important;
+            min-width: 165px !important;
             opacity: 0 !important;
             visibility: hidden !important;
-            transform: translateY(-10px) scale(0.95) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transform: translateY(-5px) !important;
+            transition: all 0.2s ease !important;
             z-index: 1001 !important;
-            backdrop-filter: blur(20px) !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
         }
-
-        .navbar-profile:hover .profile-menu {
-            opacity: 1 !important;
-            visibility: visible !important;
-            transform: translateY(0) scale(1) !important;
-        }
-
+        .navbar-profile:hover .profile-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
         .profile-menu a {
             display: flex !important;
             align-items: center !important;
-            gap: 0.875rem !important;
-            padding: 0.875rem 1.25rem !important;
-            color: #cbd5e1 !important;
-            transition: all 0.3s ease !important;
-            border-radius: 0.625rem !important;
-            font-size: 0.95rem !important;
+            gap: 0.7rem !important;
+            padding: 0.6rem 0.85rem !important;
+            color: #9CA3AF !important;
+            transition: all 0.15s ease !important;
+            border-radius: 0.4rem !important;
+            font-size: 0.875rem !important;
             text-decoration: none !important;
         }
-
-        .profile-menu a:hover {
-            background: rgba(99, 102, 241, 0.2) !important;
-            color: #818cf8 !important;
-            transform: translateX(4px) !important;
-        }
-
-        .mobile-menu-toggle {
-            display: none !important;
-        }
-
-        /* Notification Dropdown Styles */
-        .notif-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0; /* Anchor to right of the button */
-            width: 320px;
-            background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border-radius: 0.75rem;
-            z-index: 1000;
-            margin-top: 1rem;
-            overflow: hidden;
-        }
-
-        .notif-dropdown-menu.show {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .notif-header {
-            padding: 1rem;
-            background: rgba(16, 185, 129, 0.1);
-            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-            color: #f8fafc;
-        }
-
-        .notif-tabs {
-            display: flex;
-            border-bottom: 1px solid #334155;
-            background: #0f172a;
-        }
-
-        .notif-tab {
-            flex: 1;
-            padding: 0.75rem;
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: 500;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .notif-tab.active {
-            color: #10b981;
-            border-bottom: 2px solid #10b981;
-            background: rgba(16, 185, 129, 0.05);
-        }
-
-        .notif-tab .badge {
-            background: #ef4444;
-            color: white;
-            border-radius: 10px;
-            padding: 2px 6px;
-            font-size: 0.7rem;
-            margin-left: 5px;
-        }
-
-        .notif-body {
-            max-height: 350px;
-            overflow-y: auto;
-        }
-
-        .notif-tab-content {
-            display: none;
-        }
-
-        .notif-tab-content.active {
-            display: block;
-        }
-
-        .notif-item {
-            display: flex;
-            align-items: center;
-            padding: 0.85rem 1rem;
-            border-bottom: 1px solid #334155;
-            color: #e2e8f0;
-            transition: background 0.2s;
-        }
-
-        .notif-item:hover {
-            background: #334155;
-        }
-
-        .notif-item.unread {
-            background: rgba(16, 185, 129, 0.03);
-            border-left: 3px solid #10b981;
-        }
-
-        .mark-read-btn {
-            background: transparent;
-            border: 1px solid #475569;
-            color: #94a3b8;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: 10px;
-            flex-shrink: 0;
-        }
-
-        .mark-read-btn:hover {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
+        .profile-menu a:hover { background: rgba(255,255,255,0.05) !important; color: #E5E7EB !important; }
+        .mobile-menu-toggle { display: none !important; }
     </style>
 
     {% block extra_css %}{% endblock %}
