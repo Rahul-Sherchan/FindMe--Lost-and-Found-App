@@ -115,7 +115,7 @@
                 <!-- Mark as Paid — shown only for approved requests -->
                 <form method="POST" action="{% url 'admin_dashboard:mark_redeem_paid' req.pk %}"
                       style="display:inline;"
-                      onsubmit="return confirm('Confirm: Rs. {{ req.amount|floatformat:0 }} has been sent to {{ req.user.username }} ({{ req.payout_reference|default:\"no ref\" }})?')">
+                      onsubmit="return confirm('Confirm: Rs. {{ req.amount|floatformat:0 }} has been sent to {{ req.user.username }} ({% if req.payout_reference %}{{ req.payout_reference }}{% else %}no ref{% endif %})?')">
                   {% csrf_token %}
                   <button type="submit" class="btn-admin-sm btn-admin-approve">
                     <i class="fas fa-money-bill-wave"></i> Mark as Paid
