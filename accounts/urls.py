@@ -9,6 +9,7 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('profile/change-password/', views.change_password, name='change_password'),
     path('upgrade-premium/', views.upgrade_to_premium, name='upgrade_premium'),
     path('points-history/', views.points_history, name='points_history'),
     # Password reset (forgot password) flow

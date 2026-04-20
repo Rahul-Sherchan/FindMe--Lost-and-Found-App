@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -207,6 +208,29 @@ def edit_profile(request):
         form = UserProfileForm(instance=request.user)
     
     return render(request, 'accounts/edit_profile.html', {'form': form})
+
+
+@login_required
+def change_password(request):
+    """Change password for normal users.
+    Uses Django's PasswordChangeForm which validates the old (current)
+    password before allowing a new one to be set.
+    update_session_auth_hash keeps the user logged in after the change.
+    """
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Keep the user logged in after password change
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Your password was changed successfully!')
+            return redirect('accounts:profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, 'accounts/change_password.html', {'form': form})
 
 
 @login_required
