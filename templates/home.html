@@ -1,739 +1,751 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - FindMe{% endblock %}
+{% block title %}Home — FindMe Lost & Found{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Green & White Color Theme */
-    :root {
-        --green-primary: #10b981;
-        --green-dark: #059669;
-        --green-light: #34d399;
-        --teal: #14b8a6;
-        --white: #ffffff;
-        --gray-light: #f9fafb;
-        --gray-medium: #f3f4f6;
-        --gray-dark: #1f2937;
-        --text-on-white: #111827;
+    /* ── GENERAL PAGE ── */
+    .home-wrapper {
+        background-color: var(--bg-main, #0B0F19);
+        color: var(--text-primary, #E5E7EB);
+        min-height: 100vh;
     }
 
+    /* ── HERO SECTION ── */
     .hero-section {
-        min-height: 480px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 4rem 2rem;
-        background: linear-gradient(135deg, var(--gray-dark) 0%, #374151 100%);
         position: relative;
+        width: 100%;
+        min-height: 500px;
+        display: flex;
+        align-items: center;
         overflow: hidden;
+        margin-bottom: 0;
     }
 
-    .hero-section::before {
-        content: '';
+    .hero-bg {
         position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: url('{% static "images/hero_bg.png" %}');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(90deg, #0B0F19 15%, rgba(11, 15, 25, 0.82) 55%, rgba(11, 15, 25, 0.5) 100%);
+        z-index: 2;
     }
 
     .hero-content {
         position: relative;
-        z-index: 2;
-        max-width: 800px;
-    }
-
-    .hero-section h1 {
-        font-size: 3.5rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        line-height: 1.2;
-        color: var(--white);
-    }
-
-    .hero-section h1 .highlight {
-        color: var(--green-light);
-    }
-
-    .hero-section .tagline {
-        font-size: 1rem;
-        color: #d1d5db;
-        margin-bottom: 2rem;
-        line-height: 1.6;
-    }
-
-    .hero-search {
-        background: var(--white);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .hero-search form {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .hero-search input {
-        flex: 1;
-        padding: 0.85rem 1.25rem !important;
-        background: var(--gray-light) !important;
-        border: 1px solid #e5e7eb !important;
-        border-radius: 0.75rem !important;
-        color: var(--text-on-white) !important;
-        font-size: 0.95rem;
-    }
-
-    .hero-search input::placeholder {
-        color: #9ca3af;
-    }
-
-    .hero-search input:focus {
-        outline: none !important;
-        border-color: var(--green-primary) !important;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
-    }
-
-    .hero-search button {
-        padding: 0.85rem 2rem;
-        background: linear-gradient(135deg, var(--green-primary), var(--green-dark)) !important;
-        color: var(--white) !important;
-        border: none !important;
-    }
-
-    .popular-searches {
-        text-align: center;
-        margin-top: 1rem;
-    }
-
-    .popular-searches-label {
-        color: #6b7280;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        display: block;
-        letter-spacing: 0.05em;
-    }
-
-    .search-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        justify-content: center;
-    }
-
-    .search-tag {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        background: var(--gray-light);
-        border: 1px solid #e5e7eb;
-        border-radius: 2rem;
-        color: var(--text-on-white);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    .search-tag:hover {
-        background: var(--green-primary);
-        color: var(--white);
-        border-color: var(--green-primary);
-        transform: translateY(-2px);
-    }
-
-    .hero-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 1.5rem;
-        flex-wrap: wrap;
-    }
-
-    .hero-actions .btn {
-        padding: 0.85rem 2rem;
-        font-weight: 600;
-    }
-
-    /* Latest Activity Section */
-    .activity-section {
-        margin: 3rem 0;
-    }
-
-    .section-header {
+        z-index: 3;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        gap: 2rem;
     }
 
-    .section-header h2 {
-        font-size: 1.75rem;
-        color: var(--white);
-        margin: 0;
-    }
+    .hero-left { max-width: 580px; }
 
-    .section-header .text-muted {
-        color: #9ca3af !important;
-    }
-
-    .section-header .filters {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .filter-btn {
-        padding: 0.6rem 1.5rem;
-        background: var(--green-primary);
-        color: var(--white);
-        border: none;
-        border-radius: 0.75rem;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-    }
-
-    .filter-btn:hover {
-        background: var(--green-dark);
-        transform: translateY(-2px);
-    }
-
-    .filter-btn.secondary {
-        background: var(--gray-light);
-        color: var(--gray-dark);
-        border: 1px solid #e5e7eb;
-    }
-
-    .filter-btn.secondary:hover {
-        background: var(--gray-medium);
-        border-color: #d1d5db;
-    }
-
-    /* Hero Actions - Live Update & Action Cards */
-    .hero-live-section {
-        margin-top: 3rem;
-        margin-bottom: 3rem;
-    }
-
-    .live-update-card {
-        background: rgba(20, 184, 166, 0.1);
-        border: 1px solid rgba(20, 184, 166, 0.3);
-        border-radius: 1rem;
-        padding: 2rem;
-        text-align: center;
-        position: relative;
-    }
-
-    .live-update-card img {
-        width: 100%;
-        max-width: 250px;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .live-badge {
-        display: inline-block;
-        background: var(--teal);
-        color: var(--white);
-        padding: 0.4rem 0.8rem;
-        border-radius: 0.25rem;
-        font-size: 0.75rem;
+    .hero-label {
+        font-size: 0.72rem;
         font-weight: 700;
-        margin-bottom: 1rem;
-        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #22C55E;
+        margin-bottom: 1.1rem;
+        display: inline-block;
+        padding: 0.3rem 0.85rem;
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        border-radius: 9999px;
+        background: rgba(34, 197, 94, 0.1);
     }
 
-    .live-update-text {
-        color: var(--gray-dark);
-        font-size: 0.95rem;
-        margin: 0;
+    .hero-left h1 {
+        font-size: 3.6rem;
+        font-weight: 800;
+        line-height: 1.08;
+        margin-bottom: 1.25rem;
+        color: #FFFFFF;
     }
 
-    .action-cards {
+    .hero-left h1 span {
+        color: #22C55E;
+        display: block;
+    }
+
+    .hero-left p {
+        font-size: 1.05rem;
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+        line-height: 1.65;
+        max-width: 490px;
+    }
+
+    .hero-buttons {
         display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
+        gap: 0.85rem;
+        flex-wrap: wrap;
     }
 
-    .action-card {
-        padding: 2rem;
-        border-radius: 1rem;
-        color: var(--white);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .action-card-found {
-        background: linear-gradient(135deg, var(--teal), var(--green-primary));
-    }
-
-    .action-card-lost {
-        background: linear-gradient(135deg, var(--gray-dark), #2d3748);
-    }
-
-    .action-card h3 {
-        font-size: 1.5rem;
-        margin-bottom: 0.75rem;
-        color: var(--white);
-    }
-
-    .action-card p {
+    .btn-hero-found {
+        padding: 0.75rem 1.6rem;
+        background: #22C55E;
+        color: white;
+        border-radius: 0.5rem;
         font-size: 0.95rem;
-        opacity: 0.9;
-        margin-bottom: 1.5rem;
-        line-height: 1.5;
-    }
-
-    .action-card .btn {
-        background: rgba(255, 255, 255, 0.2);
-        color: var(--white);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: opacity 0.2s, transform 0.2s;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
     }
+    .btn-hero-found:hover { opacity: 0.88; transform: translateY(-1px); color: white; }
 
-    .action-card .btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-    }
-
-    .action-card-icon {
-        font-size: 2rem;
-        opacity: 0.2;
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-    }
-
-    /* Recently Found Grid */
-    .activity-container {
-        display: block;
-        margin-bottom: 3rem;
-    }
-
-    .recently-found-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-    }
-
-    .item-card-grid {
-        background: var(--white);
-        border-radius: 0.875rem;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-    }
-
-    .item-card-grid:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
-
-    .item-card-grid-image {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        background: var(--gray-light);
-    }
-
-    .item-card-grid-body {
-        padding: 1rem;
-    }
-
-    .item-card-grid-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: var(--teal);
-        color: var(--white);
-        border-radius: 0.25rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-        margin-bottom: 0.75rem;
-        letter-spacing: 0.05em;
-    }
-
-    .item-card-grid-title {
-        font-weight: 600;
-        color: var(--gray-dark);
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .item-card-grid-meta {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .view-all-link {
-        color: var(--teal);
+    .btn-hero-lost {
+        padding: 0.75rem 1.6rem;
+        background: rgba(239,68,68,0.15);
+        color: #F87171;
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
         font-weight: 600;
         text-decoration: none;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-
-    .view-all-link:hover {
-        color: var(--green-primary);
-        transform: translateX(4px);
-    }
-
-    .activity-column {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .activity-column h3 {
-        font-size: 1.1rem;
-        color: var(--gray-dark);
-        margin-bottom: 0.5rem;
-        display: flex;
+        transition: all 0.2s;
+        display: inline-flex;
         align-items: center;
         gap: 0.5rem;
     }
-
-    .activity-column .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--green-primary);
+    .btn-hero-lost:hover {
+        background: rgba(239,68,68,0.25);
+        color: #FCA5A5;
     }
 
-    .item-card-mini {
-        background: var(--white);
-        border-radius: 0.75rem;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        display: grid;
-        grid-template-columns: 100px 1fr;
-        border-left: 4px solid var(--green-primary);
+    /* Right feature card */
+    .hero-right-card {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 1.75rem 1.5rem;
+        border-radius: 1rem;
+        min-width: 270px;
+        max-width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.4rem;
     }
-
-    .item-card-mini:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    
+    .hero-feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
     }
-
-    .item-card-mini-image {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        background: var(--gray-light);
+    
+    .hero-feature-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.5rem;
+        background: rgba(34,197,94,0.15);
+        border: 1px solid rgba(34,197,94,0.25);
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 1rem;
+        color: #22C55E;
+        flex-shrink: 0;
     }
 
-    .item-card-mini-body {
-        padding: 0.75rem 1rem;
+    .hero-feature-text strong {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #E5E7EB;
+        margin-bottom: 0.2rem;
+    }
+
+    .hero-feature-text span {
+        font-size: 0.8rem;
+        color: #6B7280;
+        line-height: 1.4;
+    }
+
+    /* ── SEARCH + FILTER SECTION ── */
+    .search-filter-section {
+        background: #0D1220;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding: 1.25rem 2rem;
+    }
+
+    .search-filter-inner {
+        max-width: 1200px;
+        margin: 0 auto;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: 0.85rem;
     }
 
-    .item-card-mini-title {
+    .search-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .search-input-wrap {
+        flex: 1;
+        position: relative;
+    }
+
+    .search-input-wrap i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4B5563;
+        font-size: 0.9rem;
+    }
+
+    .search-input-wrap input {
+        width: 100%;
+        padding: 0.8rem 1rem 0.8rem 2.6rem;
+        background: #111827;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 0.5rem;
+        color: #E5E7EB;
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+    
+    .search-input-wrap input:focus {
+        outline: none;
+        border-color: #22C55E;
+    }
+
+    .search-btn {
+        padding: 0.8rem 1.75rem;
+        background: #22C55E;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        color: var(--gray-dark);
-        font-size: 0.95rem;
-        margin-bottom: 0.25rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .search-btn:hover { background: #16A34A; }
+
+    /* Filter tabs row */
+    .filter-tabs-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
-    .item-card-mini-meta {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        margin-bottom: 0.5rem;
+    .filter-tab {
+        padding: 0.38rem 1rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: #9CA3AF;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 999px;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .filter-tab:hover, .filter-tab.active {
+        color: #22C55E;
+        border-color: rgba(34,197,94,0.4);
+        background: rgba(34,197,94,0.08);
     }
 
-    .item-card-mini-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: var(--green-light);
-        color: var(--white);
-        border-radius: 2rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        width: fit-content;
+    .filter-divider {
+        width: 1px;
+        height: 20px;
+        background: rgba(255,255,255,0.1);
+        flex-shrink: 0;
     }
 
-    .empty-state {
-        background: var(--gray-light);
-        border: 2px dashed #d1d5db;
-        border-radius: 0.75rem;
-        padding: 2rem;
-        text-align: center;
-        color: #9ca3af;
+    .filter-select {
+        padding: 0.38rem 1rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: #9CA3AF;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s;
+        -webkit-appearance: none;
+        appearance: none;
+        outline: none;
+    }
+    .filter-select:hover { border-color: rgba(255,255,255,0.15); color: #E5E7EB; }
+
+    /* ── SECTION CONTAINERS ── */
+    .section-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
     }
 
-    .empty-state i {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-        opacity: 0.5;
-    }
-
-    /* Trust Section */
-    .trust-section {
-        background: linear-gradient(135deg, var(--gray-dark) 0%, #374151 100%);
-        padding: 4rem 2rem;
-        margin: 4rem 0;
-        border-radius: 1rem;
-        color: var(--white);
-    }
-
-    .trust-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-
-    .trust-label {
-        font-size: 0.8rem;
-        letter-spacing: 0.1em;
-        color: var(--green-light);
+    .section-title {
+        font-size: 1.3rem;
         font-weight: 700;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1.5rem;
+        color: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
     }
 
-    .trust-header h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+    .section-title-left { display: flex; align-items: center; gap: 0.5rem; }
+
+    .view-all-btn {
+        font-size: 0.8rem;
+        color: #22C55E;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: opacity 0.2s;
+    }
+    .view-all-btn:hover { opacity: 0.75; color: #22C55E; }
+
+    /* ── POST CARDS ── */
+    .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+        gap: 1rem;
+    }
+    
+    .post-card {
+        background: #111827;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    
+    .post-card-img { width: 100%; height: 165px; object-fit: cover; }
+    .post-card-placeholder {
+        width: 100%; height: 165px;
+        background: #1A2236;
+        display: flex; align-items: center; justify-content: center;
+        color: rgba(255,255,255,0.07); font-size: 2.5rem;
     }
 
-    .trust-header p {
-        color: #d1d5db;
-        font-size: 1.05rem;
-        max-width: 600px;
+    .post-card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.45rem; }
+
+    .post-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.4rem; }
+    .post-card-title { font-size: 1rem; font-weight: 700; color: #E5E7EB; margin: 0; line-height: 1.25; }
+
+    .badge-lost  { padding: 0.18rem 0.5rem; border-radius: 0.25rem; font-size: 0.68rem; font-weight: 700; background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid rgba(239,68,68,0.3); white-space: nowrap; }
+    .badge-found { padding: 0.18rem 0.5rem; border-radius: 0.25rem; font-size: 0.68rem; font-weight: 700; background: rgba(34,197,94,0.15); color: #4ADE80; border: 1px solid rgba(34,197,94,0.3); white-space: nowrap; }
+
+    .post-card-meta { font-size: 0.78rem; color: #6B7280; display: flex; flex-wrap: wrap; gap: 0.3rem 0.65rem; }
+    .post-card-meta span { display: flex; align-items: center; gap: 0.3rem; }
+    .post-card-meta a { color: #22C55E; text-decoration: none; }
+
+    .reward-tag {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        font-size: 0.73rem; font-weight: 600;
+        background: rgba(245,158,11,0.1); color: #FCD34D;
+        border: 1px solid rgba(245,158,11,0.2);
+        padding: 0.18rem 0.55rem; border-radius: 0.25rem;
+        margin-top: 0.15rem;
+    }
+
+    .post-card-footer { margin-top: auto; padding-top: 0.85rem; display: flex; gap: 0.4rem; }
+    
+    .btn-card-main {
+        flex: 1; padding: 0.48rem; text-align: center;
+        background: rgba(34,197,94,0.12); color: #4ADE80;
+        border: 1px solid rgba(34,197,94,0.25);
+        border-radius: 0.4rem; font-size: 0.8rem; font-weight: 600;
+        text-decoration: none; transition: background 0.15s;
+        display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+    }
+    .btn-card-main:hover { background: rgba(34,197,94,0.2); color: #4ADE80; }
+
+    .btn-card-msg {
+        flex: 1; padding: 0.48rem; text-align: center;
+        background: #1A2236; color: #9CA3AF;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 0.4rem; font-size: 0.8rem; font-weight: 500;
+        text-decoration: none; transition: all 0.15s;
+        display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+    }
+    .btn-card-msg:hover { border-color: rgba(255,255,255,0.2); color: #E5E7EB; }
+
+    .view-all-link {
+        display: block;
+        text-align: center;
+        margin-top: 1.75rem;
+        color: #6B7280;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+    .view-all-link:hover { color: #22C55E; }
+
+    /* ── HOW IT WORKS ── */
+    .how-it-works {
+        background: #0D1220;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        padding: 4rem 2rem;
+    }
+
+    .how-inner {
+        max-width: 1200px;
         margin: 0 auto;
     }
 
-    .trust-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-    }
-
-    .trust-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 1rem;
-        padding: 2rem;
+    .how-title {
         text-align: center;
-        transition: all 0.3s ease;
-    }
-
-    .trust-card:hover {
-        transform: translateY(-8px);
-        background: rgba(16, 185, 129, 0.1);
-        border-color: rgba(16, 185, 129, 0.3);
-    }
-
-    .trust-card-icon {
-        width: 60px;
-        height: 60px;
-        background: rgba(16, 185, 129, 0.15);
-        border: 2px solid var(--green-light);
-        border-radius: 50%;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1.5rem;
+        gap: 0.5rem;
+    }
+
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .step-card {
+        text-align: center;
+        padding: 1.75rem 1.25rem;
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 0.85rem;
+        transition: border-color 0.2s, transform 0.2s;
+    }
+    .step-card:hover {
+        border-color: rgba(34,197,94,0.2);
+        transform: translateY(-2px);
+    }
+
+    .step-icon {
+        width: 58px; height: 58px;
+        background: rgba(34, 197, 94, 0.1);
+        color: #22C55E;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        margin: 0 auto 1.1rem;
+        border: 1px solid rgba(34,197,94,0.2);
+    }
+
+    .step-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #E5E7EB;
+    }
+
+    .step-card p {
+        font-size: 0.84rem;
+        color: #6B7280;
+        margin: 0;
+        line-height: 1.55;
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+        padding: 2.5rem 2rem;
+    }
+
+    .cta-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .cta-banner {
+        background: linear-gradient(135deg, #111827 0%, #0f1a10 50%, #111827 100%);
+        border: 1px solid rgba(34,197,94,0.18);
+        border-radius: 1rem;
+        padding: 2.5rem 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-banner::before {
+        content: '';
+        position: absolute;
+        left: -60px; top: -60px;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%);
+    }
+
+    .cta-left { position: relative; z-index: 1; }
+
+    .cta-img {
+        width: 120px; height: 80px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        opacity: 0.7;
+        flex-shrink: 0;
+    }
+
+    .cta-banner h2 {
         font-size: 1.5rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        margin-bottom: 0.4rem;
     }
 
-    .trust-card h3 {
-        font-size: 1.25rem;
-        margin-bottom: 0.75rem;
+    .cta-banner p {
+        font-size: 0.9rem;
+        color: #6B7280;
+        margin: 0;
     }
 
-    .trust-card p {
-        color: #d1d5db;
+    .cta-btn {
+        padding: 0.8rem 2rem;
+        background: #22C55E;
+        color: white;
+        border-radius: 0.5rem;
         font-size: 0.95rem;
-        line-height: 1.6;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        position: relative; z-index: 1;
     }
-
-    @media (max-width: 968px) {
-        .hero-section h1 {
-            font-size: 2.5rem;
-        }
-
-        .recently-found-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .trust-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+    .cta-btn:hover { background: #16A34A; transform: translateY(-1px); color: white; }
 
     @media (max-width: 768px) {
-        .hero-search form {
-            flex-direction: column;
-        }
-
-        .hero-actions {
-            flex-direction: column;
-        }
-
-        .hero-actions .btn {
-            width: 100%;
-        }
-
-        .section-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .section-header .filters {
-            width: 100%;
-            margin-top: 1rem;
-        }
-
-        .filter-btn {
-            flex: 1;
-        }
-
-        .recently-found-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+        .hero-content { flex-direction: column; text-align: center; padding: 2.5rem 1.25rem; }
+        .hero-overlay { background: rgba(11, 15, 25, 0.8); }
+        .hero-left h1 { font-size: 2.4rem; }
+        .hero-buttons { justify-content: center; }
+        .hero-right-card { display: none; }
+        .search-filter-section { padding: 1rem 1.25rem; }
+        .search-row { flex-direction: column; }
+        .posts-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+        .cta-banner { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-section">
-    <div class="hero-content">
-        <h1>Reunite with <span class="highlight">what matters</span></h1>
-        <p class="tagline">The premium sanctuary for lost belongings. Connect with the community and bring treasures back home.</p>
+<div class="home-wrapper">
 
-        <div class="hero-search">
-            <form action="{% url 'items:item_list' %}" method="get">
-                <input type="text" name="query" placeholder="Search items, locations or...">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
-            </form>
-
-            <div class="popular-searches">
-                <span class="popular-searches-label">POPULAR SEARCHES:</span>
-                <div class="search-tags">
-                    <a href="{% url 'items:item_list' %}?query=keys" class="search-tag">Keys</a>
-                    <a href="{% url 'items:item_list' %}?query=wallet" class="search-tag">Wallets</a>
-                    <a href="{% url 'items:item_list' %}?query=phone" class="search-tag">Pets</a>
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-left">
+                <span class="hero-label"><i class="fas fa-map-marker-alt"></i> Welcome to FindMe</span>
+                <h1>Search. Connect.<span>Recover.</span></h1>
+                <p>A trusted community platform to report, find and reclaim lost items. Together, we make a difference.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'items:post_item' %}?type=found" class="btn-hero-found">
+                        <i class="fas fa-hand-holding"></i> Report Found Item <i class="fas fa-plus" style="font-size:0.75rem;"></i>
+                    </a>
+                    <a href="{% url 'items:post_item' %}?type=lost" class="btn-hero-lost">
+                        <i class="fas fa-search-plus"></i> Report Lost Item <i class="fas fa-plus" style="font-size:0.75rem;"></i>
+                    </a>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <!-- Action Cards -->
-    <div class="hero-live-section">
-        <div class="action-cards">
-            <!-- Found Card -->
-            <div class="action-card action-card-found">
-                <i class="fas fa-check-circle action-card-icon"></i>
-                <h3>I found something</h3>
-                <p>Be someone's hero. Report a found item and help it find its way home through our secure verification system.</p>
-                <a href="{% url 'items:post_item' %}" class="btn"><i class="fas fa-plus"></i> Report Found Item</a>
-            </div>
-
-            <!-- Lost Card -->
-            <div class="action-card action-card-lost">
-                <i class="fas fa-question-circle action-card-icon"></i>
-                <h3>I lost something</h3>
-                <p>Don't panic. List your missing item in our global database. Our community and algorithms will take it from here.</p>
-                <a href="{% url 'items:post_item' %}" class="btn"><i class="fas fa-search"></i> File a Lost Report</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recently Found Section -->
-    <section class="activity-section">
-        <div class="section-header">
-            <div>
-                <h2>Recent Posts</h2>
-                <p class="text-muted" style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Real-time updates from the FindMe community.</p>
-            </div>
-            <div>
-                <a href="{% url 'items:item_list' %}" class="view-all-link">View all items →</a>
-            </div>
-        </div>
-
-        <div class="recently-found-grid">
-            {% for item in recent_posts %}
-                <div class="item-card-grid">
-                    {% if item.images.first %}
-                        <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" class="item-card-grid-image">
-                    {% else %}
-                        <div class="item-card-grid-image" style="background: linear-gradient(135deg, var(--teal), var(--green-primary)); display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-image" style="font-size: 2rem; color: rgba(255, 255, 255, 0.3);"></i>
-                        </div>
-                    {% endif %}
-                    <div class="item-card-grid-body">
-                        <span class="item-card-grid-badge">{{ item.get_item_type_display }}</span>
-                        <div class="item-card-grid-title">{{ item.title }}</div>
-                        <div class="item-card-grid-meta">
-                            <i class="fas fa-map-marker-alt"></i> {{ item.location }}
-                        </div>
+            <div class="hero-right-card">
+                <div class="hero-feature">
+                    <div class="hero-feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="hero-feature-text">
+                        <strong>Trusted Community</strong>
+                        <span>Verified users and secure interactions</span>
                     </div>
                 </div>
-            {% empty %}
-                <div class="empty-state" style="grid-column: 1 / -1;">
-                    <i class="fas fa-inbox"></i>
-                    <p>No recent reports found</p>
+                <div class="hero-feature">
+                    <div class="hero-feature-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="hero-feature-text">
+                        <strong>Quick Response</strong>
+                        <span>Real-time notifications and alerts</span>
+                    </div>
                 </div>
-            {% endfor %}
+                <div class="hero-feature">
+                    <div class="hero-feature-icon"><i class="fas fa-gift"></i></div>
+                    <div class="hero-feature-text">
+                        <strong>Earn Rewards</strong>
+                        <span>Get points and redeem exciting rewards</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Trust Section -->
-    <section class="trust-section">
-        <div class="trust-header">
-            <div class="trust-label">THE PLATFORM STANDARD</div>
-            <h2>Trust in Reunion</h2>
-            <p>Sophisticated algorithms and a dedicated community of guardians helping you find what was once lost.</p>
+    <!-- SEARCH + FILTER SECTION -->
+    <section class="search-filter-section">
+        <div class="search-filter-inner">
+            <form action="{% url 'items:item_list' %}" method="get">
+                <div class="search-row">
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="query" placeholder="Search by item name, location, category..." value="{{ request.GET.query }}">
+                    </div>
+                    <button type="submit" class="search-btn"><i class="fas fa-search"></i> Search</button>
+                </div>
+                <div class="filter-tabs-row">
+                    <a href="{% url 'items:item_list' %}" class="filter-tab {% if not request.GET.item_type %}active{% endif %}">All Items</a>
+                    <a href="{% url 'items:item_list' %}?item_type=lost" class="filter-tab {% if request.GET.item_type == 'lost' %}active{% endif %}">Lost Items</a>
+                    <a href="{% url 'items:item_list' %}?item_type=found" class="filter-tab {% if request.GET.item_type == 'found' %}active{% endif %}">Found Items</a>
+                    <div class="filter-divider"></div>
+                    <a href="{% url 'items:item_list' %}?category=electronics" class="filter-tab">Electronics</a>
+                    <a href="{% url 'items:item_list' %}?category=documents" class="filter-tab">Documents</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- RECENT POSTS SECTION -->
+    <section class="section-container">
+        <h2 class="section-title">
+            <span class="section-title-left"><i class="fas fa-history" style="color: #22C55E;"></i> Recent Posts</span>
+            <a href="{% url 'items:item_list' %}" class="view-all-btn">View all items <i class="fas fa-arrow-right"></i></a>
+        </h2>
+        
+        <div class="posts-grid">
+            {% for item in recent_posts %}
+            <div class="post-card">
+                {% if item.images.first %}
+                    <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" class="post-card-img">
+                {% else %}
+                    <div class="post-card-placeholder"><i class="fas fa-image"></i></div>
+                {% endif %}
+
+                <div class="post-card-body">
+                    <div class="post-card-top">
+                        <h3 class="post-card-title">{{ item.title|truncatechars:30 }}</h3>
+                        {% if item.item_type == 'lost' %}
+                            <span class="badge-lost">LOST</span>
+                        {% else %}
+                            <span class="badge-found">FOUND</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="post-card-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> <a href="{% url 'items:item_list' %}?location={{ item.location }}">{{ item.location|truncatewords:3 }}</a></span>
+                        <span><i class="fas fa-calendar-alt"></i> {{ item.date_lost_found|date:"M d, Y" }}</span>
+                    </div>
+
+                    <div class="post-card-meta">
+                        <span><i class="fas fa-tag"></i> {{ item.category.name }}</span>
+                        <span><i class="fas fa-user"></i> {{ item.user.username }}</span>
+                    </div>
+
+                    {% if item.reward_points > 0 %}
+                    <div><span class="reward-tag"><i class="fas fa-coins"></i> {{ item.reward_points }} pts reward</span></div>
+                    {% endif %}
+
+                    <div class="post-card-footer">
+                        <a href="{% url 'items:item_detail' item.pk %}" class="btn-card-main">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        {% if user.is_authenticated and user != item.user %}
+                            <a href="{% url 'messaging:start_conversation' item.pk %}" class="btn-card-msg">
+                                <i class="fas fa-comment"></i> Message
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: #4B5563;">
+                <i class="fas fa-inbox" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+                <p>No recent reports. Check back later or post one yourself.</p>
+            </div>
+            {% endfor %}
         </div>
 
-        <div class="trust-grid">
-            <div class="trust-card">
-                <div class="trust-card-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3>Verified Matching</h3>
-                <p>Our AI-assisted matching system analyzes item details and images to find potential connections instantly with high precision.</p>
-            </div>
+        <a href="{% url 'items:item_list' %}" class="view-all-link">Browse Full Database <i class="fas fa-arrow-right"></i></a>
+    </section>
 
-            <div class="trust-card">
-                <div class="trust-card-icon">
-                    <i class="fas fa-lock"></i>
+    <!-- HOW IT WORKS SECTION -->
+    <section class="how-it-works">
+        <div class="how-inner">
+            <h2 class="how-title"><i class="fas fa-info-circle" style="color: #22C55E;"></i> How FindMe Works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-icon"><i class="fas fa-edit"></i></div>
+                    <h3>1. Report</h3>
+                    <p>Report lost or found items in just a few simple steps.</p>
                 </div>
-                <h3>Secure Handoff</h3>
-                <p>Safety is our priority. We facilitate secure communication and encourage safe public meetups for item exchanges.</p>
+                <div class="step-card">
+                    <div class="step-icon"><i class="fas fa-search"></i></div>
+                    <h3>2. Discover</h3>
+                    <p>Browse and search items reported by people around you.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon"><i class="fas fa-comments"></i></div>
+                    <h3>3. Connect</h3>
+                    <p>Contact the reporter and verify the item safely.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon"><i class="fas fa-handshake"></i></div>
+                    <h3>4. Reunite</h3>
+                    <p>Reunite with your belongings and earn reward points!</p>
+                </div>
             </div>
+        </div>
+    </section>
 
-            <div class="trust-card">
-                <div class="trust-card-icon">
-                    <i class="fas fa-bell"></i>
+    <!-- CTA SECTION -->
+    <section class="cta-section">
+        <div class="cta-inner">
+            <div class="cta-banner">
+                <div class="cta-left">
+                    <h2>Lost something? Start searching now.</h2>
+                    <p>Join our growing community and help each other.</p>
                 </div>
-                <h3>Real-time Alerts</h3>
-                <p>Get notified the second someone posts a matching item in your area, keeping you always in the loop.</p>
+                <a href="{% url 'items:item_list' %}" class="cta-btn">
+                    Browse All Items <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </div>
     </section>
