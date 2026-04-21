@@ -13,6 +13,8 @@ from .utils import validate_image_count, notify_matching_users
 from notifications.models import Notification
 from accounts.models import Transaction
 from rewards.views import earn_points   # helper to award points
+from django.utils import timezone
+from datetime import timedelta
 
 
 def item_list(request):
@@ -65,6 +67,20 @@ def item_list(request):
 @login_required
 def post_item(request):
     """Post a new lost or found item"""
+    # Check daily post limit
+    recent_posts_count = Item.objects.filter(
+        user=request.user,
+        created_at__gte=timezone.now() - timedelta(days=1)
+    ).count()
+    
+    limit = 20 if request.user.is_premium else 3
+    if recent_posts_count >= limit:
+        if request.user.is_premium:
+            messages.error(request, 'You have reached your premium limit of 20 posts per 24 hours. Please try again later.')
+        else:
+            messages.error(request, 'You have reached your limit of 3 posts per 24 hours. Please come back later or upgrade to Premium to post more!')
+        return redirect('items:item_list')
+
     if request.method == 'POST':
         form = ItemForm(request.POST, user=request.user)
         featured_image = request.FILES.get('featured_image')
