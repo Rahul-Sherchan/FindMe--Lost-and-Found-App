@@ -436,20 +436,23 @@ def calendar_data_api(request):
         return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
     
     try:
+        start_of_day = timezone.make_aware(datetime.combine(target_date, datetime.min.time()))
+        end_of_day = timezone.make_aware(datetime.combine(target_date, datetime.max.time()))
+
         # Fetch data for the given date
         # 1. New users registered on this date
         new_users = User.objects.filter(
-            date_joined__date=target_date
+            date_joined__range=(start_of_day, end_of_day)
         ).count()
         
         # 2. Posts created on this date (separated by type)
         lost_posts = Item.objects.filter(
-            created_at__date=target_date,
+            created_at__range=(start_of_day, end_of_day),
             item_type='lost'
         ).count()
         
         found_posts = Item.objects.filter(
-            created_at__date=target_date,
+            created_at__range=(start_of_day, end_of_day),
             item_type='found'
         ).count()
         
@@ -458,12 +461,12 @@ def calendar_data_api(request):
         # 3. Recovered items (items marked as resolved/claimed on this date)
         recovered_items = Item.objects.filter(
             Q(status='resolved') | Q(status='claimed'),
-            updated_at__date=target_date
+            updated_at__range=(start_of_day, end_of_day)
         ).count()
         
         # 4. Messages exchanged on this date
         messages_count = Message.objects.filter(
-            created_at__date=target_date
+            created_at__range=(start_of_day, end_of_day)
         ).count()
         
         # Calculate activity level (0-100) for color-coding
@@ -537,16 +540,18 @@ def calendar_month_data_api(request):
         for day in range(1, last_day + 1):
             try:
                 date_obj = date(year, month, day)
+                start_of_day = timezone.make_aware(datetime.combine(date_obj, datetime.min.time()))
+                end_of_day = timezone.make_aware(datetime.combine(date_obj, datetime.max.time()))
                 
                 # Calculate activity score for this day
-                new_users = User.objects.filter(date_joined__date=date_obj).count()
-                lost_posts = Item.objects.filter(created_at__date=date_obj, item_type='lost').count()
-                found_posts = Item.objects.filter(created_at__date=date_obj, item_type='found').count()
+                new_users = User.objects.filter(date_joined__range=(start_of_day, end_of_day)).count()
+                lost_posts = Item.objects.filter(created_at__range=(start_of_day, end_of_day), item_type='lost').count()
+                found_posts = Item.objects.filter(created_at__range=(start_of_day, end_of_day), item_type='found').count()
                 recovered = Item.objects.filter(
                     Q(status='resolved') | Q(status='claimed'),
-                    updated_at__date=date_obj
+                    updated_at__range=(start_of_day, end_of_day)
                 ).count()
-                msg_count = Message.objects.filter(created_at__date=date_obj).count()
+                msg_count = Message.objects.filter(created_at__range=(start_of_day, end_of_day)).count()
                 
                 # Ensure all values are integers
                 new_users = int(new_users) if new_users else 0
@@ -555,20 +560,29 @@ def calendar_month_data_api(request):
                 recovered = int(recovered) if recovered else 0
                 msg_count = int(msg_count) if msg_count else 0
                 
-                activity_score = (new_users * 2) + ((lost_posts + found_posts) * 3) + (recovered * 5) + (msg_count * 1)
-                activity_level = min(int((activity_score / 100) * 100), 100)
-                activity_level = max(0, activity_level)  # Ensure not negative
+                total_posts_day = lost_posts + found_posts
+                has_activity = (total_posts_day + new_users + recovered + msg_count) > 0
                 
-                if activity_level >= 60:
-                    category = 'high'
-                elif activity_level >= 30:
-                    category = 'medium'
+                if has_activity:
+                    activity_score = (new_users * 2) + (total_posts_day * 3) + (recovered * 5) + (msg_count * 1)
+                    activity_level = min(int(activity_score), 100)
+                    activity_level = max(1, activity_level)  # At least 1 if there's any activity
+                    
+                    if activity_level >= 60:
+                        category = 'high'
+                    elif activity_level >= 30:
+                        category = 'medium'
+                    else:
+                        category = 'low'
                 else:
-                    category = 'low'
+                    activity_level = 0
+                    category = 'none'
                 
                 activity_data[day] = {
                     'level': activity_level,
                     'category': category,
+                    'total_posts': total_posts_day,
+                    'has_activity': has_activity,
                 }
             except Exception as e:
                 # Log error for this specific day but continue with others
