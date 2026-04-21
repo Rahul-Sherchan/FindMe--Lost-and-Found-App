@@ -26,6 +26,19 @@ class ItemForm(forms.ModelForm):
         self.fields['reward_points'].required = False
         self.fields['landmark'].required = False
 
+    def clean(self):
+        cleaned_data = super().clean()
+        item_type = cleaned_data.get('item_type')
+        reward_points = cleaned_data.get('reward_points')
+
+        if item_type == 'found' and reward_points:
+            # Reject reward points for found items (force to 0 or raise error)
+            # We raise a validation error here to meet strict backend rejection requirement
+            self.add_error('reward_points', 'Reward points cannot be set for found items.')
+            cleaned_data['reward_points'] = 0
+            
+        return cleaned_data
+
 
 class ItemImageForm(forms.ModelForm):
     """Form for uploading item images"""

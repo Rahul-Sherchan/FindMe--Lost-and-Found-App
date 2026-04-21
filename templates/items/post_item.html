@@ -160,7 +160,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="reward-points-group">
                         <label class="form-label">Reward Points (for lost items)</label>
                         {{ form.reward_points|add_class:"form-control" }}
                         <small class="text-muted">Optional: Offer points as reward for finding your item</small>
@@ -223,11 +223,20 @@
             // Remove both classes first
             formCard.classList.remove('card-border-lost', 'card-border-found');
             
+            const rewardGroup = document.getElementById('reward-points-group');
+            
             // Add appropriate class based on selection
             if (typeSelect.value === 'lost') {
                 formCard.classList.add('card-border-lost');
+                if (rewardGroup) rewardGroup.style.display = 'block';
             } else if (typeSelect.value === 'found') {
                 formCard.classList.add('card-border-found');
+                if (rewardGroup) {
+                    rewardGroup.style.display = 'none';
+                    // Optional: clear the field
+                    const rewardInput = rewardGroup.querySelector('input');
+                    if(rewardInput) rewardInput.value = '';
+                }
             }
         }
         
