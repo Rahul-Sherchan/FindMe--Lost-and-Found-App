@@ -65,8 +65,10 @@ def user_login(request):
                         return redirect('accounts:login')
                 else:
                     # User chose 'Normal User' from the dropdown
-                    # Even if they are an admin, we respect their chosen role
-                    # and send them to the regular site — NOT the admin panel.
+                    if user.is_staff or user.user_type == 'admin':
+                        messages.error(request, 'You cannot log in as a Normal User with admin credentials.')
+                        return redirect('accounts:login')
+
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.username}!')
                     next_url = request.GET.get('next', 'home')
