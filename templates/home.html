@@ -635,15 +635,13 @@
                     <a href="{% url 'items:item_list' %}" class="filter-tab {% if not request.GET.item_type %}active{% endif %}">All Items</a>
                     <a href="{% url 'items:item_list' %}?item_type=lost" class="filter-tab {% if request.GET.item_type == 'lost' %}active{% endif %}">Lost Items</a>
                     <a href="{% url 'items:item_list' %}?item_type=found" class="filter-tab {% if request.GET.item_type == 'found' %}active{% endif %}">Found Items</a>
-                    <div class="filter-divider"></div>
-                    <a href="{% url 'items:item_list' %}?category=electronics" class="filter-tab">Electronics</a>
-                    <a href="{% url 'items:item_list' %}?category=documents" class="filter-tab">Documents</a>
                 </div>
             </form>
         </div>
     </section>
 
     <!-- RECENT POSTS SECTION -->
+    {% if user.is_authenticated %}
     <section class="section-container">
         <h2 class="section-title">
             <span class="section-title-left"><i class="fas fa-history" style="color: #22C55E;"></i> Recent Posts</span>
@@ -705,6 +703,7 @@
 
         <a href="{% url 'items:item_list' %}" class="view-all-link">Browse Full Database <i class="fas fa-arrow-right"></i></a>
     </section>
+    {% endif %}
 
     <!-- HOW IT WORKS SECTION -->
     <section class="how-it-works">
